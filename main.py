@@ -30,7 +30,7 @@ THEME = {
 COLOR = {
     'empty': '#FFFFFF', 'wall': '#555555',
     'start': '#2E7D32', 'end': '#D32F2F',
-    'open': '#4CAF50', 'closed': '#A5D6A7',
+    'open': "#74D377", 'closed': '#A5D6A7',
     'path': '#FFD600', 'grid': '#E0E0E0',
     'compare_bg_header': '#E0E0E0',
     'compare_bg_row': '#F9FBE7',
@@ -301,13 +301,13 @@ class App(tk.Tk):
     def _random_maze(self):
         # Tạo mê cung bằng Recursive Backtracking
         self._clear_walls()
-        self.grid_data = [[1]*COLS for _ in range(ROWS)]
+        self.grid_data = [[0]*COLS for _ in range(ROWS)]
+        for r in range(1, ROWS-1):
+            for c in range(1, COLS-1):
+                self.grid_data[r][c] = 1
 
-        sr, sc = 1, 1
-        self.start = (sr, sc)
-        er = ROWS-2 if (ROWS-2) % 2 == 1 else ROWS-3
-        ec = COLS-2 if (COLS-2) % 2 == 1 else COLS-3
-        self.end = (er, ec)
+        sr, sc = DEFAULT_START
+        self.start, self.end = DEFAULT_START, DEFAULT_END
 
         stack = [(sr, sc)]
         self.grid_data[sr][sc] = 0
@@ -316,7 +316,7 @@ class App(tk.Tk):
             neighbors = []
             for dr, dc in [(-2,0),(2,0),(0,-2),(0,2)]:
                 nr, nc = cr+dr, cc+dc
-                if 0 < nr < ROWS-1 and 0 < nc < COLS-1 and self.grid_data[nr][nc]:
+                if 1 < nr < ROWS-2 and 1 < nc < COLS-2 and self.grid_data[nr][nc]:
                     neighbors.append((nr, nc, cr+dr//2, cc+dc//2))
             if neighbors:
                 nr, nc, wr, wc = random.choice(neighbors)
@@ -326,8 +326,6 @@ class App(tk.Tk):
             else:
                 stack.pop()
 
-        self.grid_data[sr][sc] = 0
-        self.grid_data[er][ec] = 0
         self._draw_grid()
 
     # * ── Heuristic và láng giềng ────
