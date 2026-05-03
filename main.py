@@ -6,13 +6,37 @@ import time
 import math
 
 CELL = 25
-COLS, ROWS = 50, 30
+COLS, ROWS = 45, 25
+DEFAULT_SPEED = 95
+DEFAULT_START = (2, 2)
+DEFAULT_END = (ROWS-3, COLS-3)
+MAZE_WALL_PROB = 0.2
+
+DELAY_START = 10    
+DELAY_PAUSE = 50     
+MAX_SPEED_DELAY = 101 # base ms for speed calculation
+
+THEME = {
+    'bg_main': '#FAFAFA', 'bg_panel': '#F5F5F5',
+    'btn_start': '#4CAF50', 'btn_pause': '#FFC107',
+    'btn_step': '#607D8B', 'btn_clear_path': '#FF9800',
+    'btn_clear_walls': '#E53935', 'btn_random': '#795548',
+    'btn_compare': '#3F51B5', 'btn_fg': 'white',
+    'font_main': ('Segoe UI', 9),
+    'font_bold': ('Segoe UI', 9, 'bold'),
+    'font_title': ('Segoe UI', 12, 'bold'),
+}
+
 COLOR = {
     'empty': '#FFFFFF', 'wall': '#555555',
     'start': '#2E7D32', 'end': '#D32F2F',
     'open': '#4CAF50', 'closed': '#A5D6A7',
     'path': '#FFD600', 'grid': '#E0E0E0',
+    'compare_bg_header': '#E0E0E0',
+    'compare_bg_row': '#F9FBE7',
+    'compare_bg_err': '#FFEBEE',
 }
+# -------------------------------
 
 class App(tk.Tk):
     def __init__(self):
@@ -21,8 +45,8 @@ class App(tk.Tk):
         self.state('zoomed')
 
         self.grid_data = [[0]*COLS for _ in range(ROWS)]
-        self.start = (2, 2)
-        self.end = (ROWS-3, COLS-3)
+        self.start = DEFAULT_START
+        self.end = DEFAULT_END
         self.running = False
         self.paused = False
         self.step_mode = False
@@ -41,22 +65,22 @@ class App(tk.Tk):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
-        self.canvas = tk.Canvas(self, bg='#FAFAFA', highlightthickness=0)
+        self.canvas = tk.Canvas(self, bg=THEME['bg_main'], highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky='nsew')
         self.canvas.bind('<Button-1>', self._on_press)
         self.canvas.bind('<B1-Motion>', self._on_drag)
         self.canvas.bind('<ButtonRelease-1>', self._on_release)
 
-        panel = tk.Frame(self, width=260, bg='#F5F5F5', padx=12, pady=10)
+        panel = tk.Frame(self, width=260, bg=THEME['bg_panel'], padx=12, pady=10)
         panel.grid(row=0, column=1, sticky='ns')
         panel.grid_propagate(False)
 
         # Settings
-        tk.Label(panel, text='Settings', font=('Segoe UI',12,'bold'),
-                 bg='#F5F5F5').pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Settings', font=THEME['font_title'],
+                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
 
-        tk.Label(panel, text='Heuristic:', bg='#F5F5F5',
-                 font=('Segoe UI',9)).pack(anchor='w')
+        tk.Label(panel, text='Heuristic:', bg=THEME['bg_panel'],
+                 font=THEME['font_main']).pack(anchor='w')
         self.heuristic = ttk.Combobox(panel, state='readonly', width=22,
             values=['Euclidean','Manhattan','Octile','Chebyshev','Dijkstra (h=0)'])
         self.heuristic.set('Euclidean')
@@ -68,70 +92,70 @@ class App(tk.Tk):
         self.bidir = tk.BooleanVar()
 
         tk.Checkbutton(panel, text='Allow Diagonal', variable=self.allow_diag,
-                       bg='#F5F5F5', font=('Segoe UI',9),
+                       bg=THEME['bg_panel'], font=THEME['font_main'],
                        command=self._toggle_diag).pack(anchor='w')
         self.cb_cross = tk.Checkbutton(panel, text='Allow Cross Corners',
-                       variable=self.cross_corner, bg='#F5F5F5', font=('Segoe UI',9))
+                       variable=self.cross_corner, bg=THEME['bg_panel'], font=THEME['font_main'])
         self.cb_cross.pack(anchor='w', padx=(16,0))
         self.cb_dcost = tk.Checkbutton(panel, text='Diagonal Cost = 1',
-                       variable=self.diag_cost1, bg='#F5F5F5', font=('Segoe UI',9))
+                       variable=self.diag_cost1, bg=THEME['bg_panel'], font=THEME['font_main'])
         self.cb_dcost.pack(anchor='w', padx=(16,0))
         tk.Checkbutton(panel, text='Bi-directional', variable=self.bidir,
-                       bg='#F5F5F5', font=('Segoe UI',9)).pack(anchor='w')
+                       bg=THEME['bg_panel'], font=THEME['font_main']).pack(anchor='w')
 
-        tk.Label(panel, text='Speed:', bg='#F5F5F5',
-                 font=('Segoe UI',9)).pack(anchor='w', pady=(8,0))
+        tk.Label(panel, text='Speed:', bg=THEME['bg_panel'],
+                 font=THEME['font_main']).pack(anchor='w', pady=(8,0))
         self.speed = tk.Scale(panel, from_=1, to=100, orient='horizontal',
-                              bg='#F5F5F5', highlightthickness=0, length=220)
-        self.speed.set(95)
+                              bg=THEME['bg_panel'], highlightthickness=0, length=220)
+        self.speed.set(DEFAULT_SPEED)
         self.speed.pack(anchor='w')
 
         # Controls
         ttk.Separator(panel, orient='horizontal').pack(fill='x', pady=8)
-        tk.Label(panel, text='Controls', font=('Segoe UI',12,'bold'),
-                 bg='#F5F5F5').pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Controls', font=THEME['font_title'],
+                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
 
-        bf = tk.Frame(panel, bg='#F5F5F5')
+        bf = tk.Frame(panel, bg=THEME['bg_panel'])
         bf.pack(fill='x')
 
-        self.btn_start = tk.Button(bf, text='Start', width=12, bg='#4CAF50',
-                                   fg='white', font=('Segoe UI',9,'bold'),
+        self.btn_start = tk.Button(bf, text='Start', width=12, bg=THEME['btn_start'],
+                                   fg=THEME['btn_fg'], font=THEME['font_bold'],
                                    relief='flat', command=self._toggle_run)
         self.btn_start.grid(row=0, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Next Step', width=12, bg='#607D8B', fg='white',
-                  font=('Segoe UI',9), relief='flat',
+        tk.Button(bf, text='Next Step', width=12, bg=THEME['btn_step'], fg=THEME['btn_fg'],
+                  font=THEME['font_main'], relief='flat',
                   command=self._next_step).grid(row=0, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Clear Path', width=12, bg='#FF9800', fg='white',
-                  font=('Segoe UI',9), relief='flat',
+        tk.Button(bf, text='Clear Path', width=12, bg=THEME['btn_clear_path'], fg=THEME['btn_fg'],
+                  font=THEME['font_main'], relief='flat',
                   command=self._clear_path).grid(row=1, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Clear Walls', width=12, bg='#E53935', fg='white',
-                  font=('Segoe UI',9), relief='flat',
+        tk.Button(bf, text='Clear Walls', width=12, bg=THEME['btn_clear_walls'], fg=THEME['btn_fg'],
+                  font=THEME['font_main'], relief='flat',
                   command=self._clear_walls).grid(row=1, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Random Walls', width=12, bg='#795548', fg='white',
-                  font=('Segoe UI',9), relief='flat',
+        tk.Button(bf, text='Random Walls', width=12, bg=THEME['btn_random'], fg=THEME['btn_fg'],
+                  font=THEME['font_main'], relief='flat',
                   command=self._random_walls).grid(row=2, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Random Maze', width=12, bg='#795548', fg='white',
-                  font=('Segoe UI',9), relief='flat',
+        tk.Button(bf, text='Random Maze', width=12, bg=THEME['btn_random'], fg=THEME['btn_fg'],
+                  font=THEME['font_main'], relief='flat',
                   command=self._random_maze).grid(row=2, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Compare All', width=26, bg='#3F51B5', fg='white',
-                  font=('Segoe UI',9,'bold'), relief='flat',
+        tk.Button(bf, text='Compare All', width=26, bg=THEME['btn_compare'], fg=THEME['btn_fg'],
+                  font=THEME['font_bold'], relief='flat',
                   command=self._compare_all).grid(row=3, column=0, columnspan=2, padx=2, pady=2)
 
         # Statistics
         ttk.Separator(panel, orient='horizontal').pack(fill='x', pady=8)
-        tk.Label(panel, text='Statistics', font=('Segoe UI',12,'bold'),
-                 bg='#F5F5F5').pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Statistics', font=THEME['font_title'],
+                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
 
         labels = [('Path Cost','cost'),
                   ('Visited Nodes','visited'),('Max Open Nodes','max_open'),
                   ('Search Time','time'),('Operations','ops')]
         for text, key in labels:
-            f = tk.Frame(panel, bg='#F5F5F5')
+            f = tk.Frame(panel, bg=THEME['bg_panel'])
             f.pack(fill='x', pady=1)
-            tk.Label(f, text=f'{text}:', bg='#F5F5F5',
-                     font=('Segoe UI',9)).pack(side='left')
-            tk.Label(f, textvariable=self.stats[key], bg='#F5F5F5',
-                     font=('Segoe UI',9,'bold')).pack(side='right')
+            tk.Label(f, text=f'{text}:', bg=THEME['bg_panel'],
+                     font=THEME['font_main']).pack(side='left')
+            tk.Label(f, textvariable=self.stats[key], bg=THEME['bg_panel'],
+                     font=THEME['font_bold']).pack(side='right')
 
     def _toggle_diag(self):
         st = 'normal' if self.allow_diag.get() else 'disabled'
@@ -177,7 +201,7 @@ class App(tk.Tk):
             self.drag_node = 'start'
         elif pos == self.end and not self.visualized:
             self.drag_node = 'end'
-        elif pos != self.start and pos != self.end:
+        elif pos != self.start and pos != self.end and not self.visualized:
             self.draw_mode = 'erase' if self.grid_data[pos[0]][pos[1]] else 'wall'
             self._paint_wall(pos)
 
@@ -212,16 +236,21 @@ class App(tk.Tk):
     # * ── Controls ────
     def _toggle_run(self):
         if self.running:
-            self.paused = not self.paused
-            self.btn_start.config(text='Start' if self.paused else 'Pause',
-                                  bg='#4CAF50' if self.paused else '#FFC107')
+            if self.step_mode:
+                self.step_mode = False
+                self.paused = False
+                self.btn_start.config(text='Pause', bg=THEME['btn_pause'])
+            else:
+                self.paused = not self.paused
+                self.btn_start.config(text='Start' if self.paused else 'Pause',
+                                      bg=THEME['btn_start'] if self.paused else THEME['btn_pause'])
         else:
             self._clear_path()
             self.running = True
             self.paused = False
             self.step_mode = False
-            self.btn_start.config(text='Pause', bg='#FFC107')
-            self.after(10, self._run_algorithm)
+            self.btn_start.config(text='Pause', bg=THEME['btn_pause'])
+            self.after(DELAY_START, self._run_algorithm)
 
     def _next_step(self):
         if not self.running:
@@ -229,17 +258,20 @@ class App(tk.Tk):
             self.running = True
             self.paused = False
             self.step_mode = True
-            self.btn_start.config(text='Pause', bg='#FFC107')
-            self.after(10, self._run_algorithm)
+            self.btn_start.config(text='Start', bg=THEME['btn_start'])
+            self.after(DELAY_START, self._run_algorithm)
         else:
+            self.step_mode = True
+            self.paused = False
             self.step_event = True
+            self.btn_start.config(text='Start', bg=THEME['btn_start'])
 
     def _clear_path(self):
         self.running = False
         self.paused = False
         self.step_mode = False
         self.visualized = False
-        self.btn_start.config(text='Start', bg='#4CAF50')
+        self.btn_start.config(text='Start', bg=THEME['btn_start'])
         for r in range(ROWS):
             for c in range(COLS):
                 if (r,c) == self.start:
@@ -262,7 +294,7 @@ class App(tk.Tk):
         self._clear_walls()
         for r in range(ROWS):
             for c in range(COLS):
-                if (r,c) != self.start and (r,c) != self.end and random.random() < 0.3:
+                if (r,c) != self.start and (r,c) != self.end and random.random() < MAZE_WALL_PROB:
                     self.grid_data[r][c] = 1
                     self._set_cell(r, c, 'wall')
 
@@ -345,156 +377,167 @@ class App(tk.Tk):
         else:
             self._run_astar()
 
-    def _run_astar(self):
+    def _run_astar(self, hname=None, instant=False):
         start, end = self.start, self.end
         g = {start: 0}
         came_from = {start: None}
-        counter = 0
-        ops = 0
-        open_set = [(self._h(start, end), counter, start)]
-        in_open = {start}
+        counter = ops = 0
+        open_set = [(self._h(start, end, hname), counter, start)]
         closed = set()
         max_open = 1
         t0 = time.perf_counter()
 
         def step():
             nonlocal counter, ops, max_open
-            if not self.running:
-                return
+            if not instant:
+                if not self.running: return False
+                if self.paused and not self.step_mode:
+                    self.after(DELAY_PAUSE, step)
+                    return False
+                if self.step_mode and not self.step_event and counter > 0:
+                    self.after(DELAY_PAUSE, step)
+                    return False
+                self.step_event = False
 
-            if self.paused and not self.step_mode:
-                self.after(50, step)
-                return
-            if self.step_mode and not self.step_event and counter > 0:
-                self.after(50, step)
-                return
-            self.step_event = False
+            while open_set:
+                _, _, current = heapq.heappop(open_set)
+                if current not in closed: break
+            else:
+                return self._finish(None, g, len(closed), max_open, t0, ops, instant)
 
-            if not open_set:
-                self._finish(None, g, len(closed), max_open, t0, ops)
-                return
-
-            f, _, current = heapq.heappop(open_set)
-            in_open.discard(current)
             ops += 1
+            closed.add(current)
+            if not instant and current != start and current != end:
+                self._set_cell(*current, 'closed')
 
             if current == end:
                 path = []
-                n = current
-                while n:
-                    path.append(n)
-                    n = came_from[n]
-                self._finish(path, g, len(closed), max_open, t0, ops)
-                return
+                node = current
+                while node:
+                    path.append(node)
+                    node = came_from[node]
+                return self._finish(path, g, len(closed), max_open, t0, ops, instant)
 
-            closed.add(current)
-            if current != start:
-                self._set_cell(*current, 'closed')
-
-            for nb, cost in self._neighbors(current):
-                if nb in closed:
-                    continue
-                ng = g[current] + cost
+            for neighbor, cost in self._neighbors(current):
+                if neighbor in closed: continue
+                new_g = g[current] + cost
                 ops += 1
-                if nb not in g or ng < g[nb]:
-                    g[nb] = ng
-                    came_from[nb] = current
+                if neighbor not in g or new_g < g[neighbor]:
+                    g[neighbor] = new_g
+                    came_from[neighbor] = current
                     counter += 1
-                    heapq.heappush(open_set, (ng + self._h(nb, end), counter, nb))
-                    in_open.add(nb)
-                    if nb != end:
-                        self._set_cell(*nb, 'open')
+                    heapq.heappush(open_set, (new_g + self._h(neighbor, end, hname), counter, neighbor))
+                    if not instant and neighbor != end:
+                        self._set_cell(*neighbor, 'open')
 
-            max_open = max(max_open, len(in_open))
-            delay = max(1, 101 - self.speed.get())
+            max_open = max(max_open, len(open_set))
+            
+            if instant: return None
+            delay = max(1, MAX_SPEED_DELAY - self.speed.get())
             self.after(delay, step)
 
-        step()
+        if instant:
+            while True:
+                res = step()
+                if res is not None: return res
+        else:
+            step()
 
-    def _run_bidir(self):
+    def _run_bidir(self, hname=None, instant=False):
         start, end = self.start, self.end
-        gf, gb = {start: 0}, {end: 0}
-        cf, cb = {start: None}, {end: None}
-        counter = 0
-        ops = 0
-        of = [(self._h(start, end), counter, start)]
-        counter += 1
-        ob = [(self._h(end, start), counter, end)]
-        inf_f, inf_b = {start}, {end}
-        clf, clb = set(), set()
+        g = {start: 0, end: 0}
+        came_from = {start: None, end: None}
+        opened_by = {start: 'start', end: 'end'}
+        closed = set()
+        counter = ops = 0
+        open_forward = [(self._h(start, end, hname), counter, start)]; counter += 1
+        open_backward = [(self._h(end, start, hname), counter, end)]; counter += 1
         max_open = 2
-        best = float('inf')
-        meet = None
         t0 = time.perf_counter()
 
         def step():
-            nonlocal counter, ops, max_open, best, meet
-            if not self.running:
-                return
-            if self.paused and not self.step_mode:
-                self.after(50, step)
-                return
-            if self.step_mode and not self.step_event and counter > 2:
-                self.after(50, step)
-                return
-            self.step_event = False
+            nonlocal counter, ops, max_open
+            if not instant:
+                if not self.running: return False
+                if self.paused and not self.step_mode:
+                    self.after(DELAY_PAUSE, step)
+                    return False
+                if self.step_mode and not self.step_event and counter > 2:
+                    self.after(DELAY_PAUSE, step)
+                    return False
+                self.step_event = False
 
-            if not of and not ob:
-                self._finish_bidir(meet, cf, cb, gf, len(clf)+len(clb), max_open, t0, ops)
-                return
+            if not open_forward or not open_backward:
+                return self._finish_bidir(None, None, came_from, len(closed), max_open, t0, ops, instant)
 
-            # Mở rộng 1 phía mỗi step
-            for oset, g_cur, came, g_other, closed_cur, in_cur, closed_other, target in [
-                (of, gf, cf, gb, clf, inf_f, clb, end),
-                (ob, gb, cb, gf, clb, inf_b, clf, start)]:
-                if not oset:
-                    continue
-                f, _, current = heapq.heappop(oset)
-                in_cur.discard(current)
+            # --- FORWARD ---
+            while open_forward:
+                _, _, current = heapq.heappop(open_forward)
+                if current not in closed: break
+            else: current = None
+
+            if current:
                 ops += 1
-
-                closed_cur.add(current)
-                if current != start and current != end:
+                closed.add(current)
+                if not instant and current != start and current != end:
                     self._set_cell(*current, 'closed')
 
-                if current in closed_other:
-                    total = g_cur[current] + g_other[current]
-                    if total < best:
-                        best = total
-                        meet = current
+                for neighbor, cost in self._neighbors(current):
+                    if neighbor in closed: continue
+                    if opened_by.get(neighbor) == 'end':
+                        return self._finish_bidir(current, neighbor, came_from, len(closed), max_open, t0, ops, instant)
 
-                for nb, cost in self._neighbors(current):
-                    if nb in closed_cur:
-                        continue
-                    ng = g_cur[current] + cost
+                    new_g = g[current] + cost
                     ops += 1
-                    if nb not in g_cur or ng < g_cur[nb]:
-                        g_cur[nb] = ng
-                        came[nb] = current
+                    if opened_by.get(neighbor) != 'start' or new_g < g.get(neighbor, float('inf')):
+                        g[neighbor] = new_g
+                        came_from[neighbor] = current
                         counter += 1
-                        heapq.heappush(oset, (ng + self._h(nb, target), counter, nb))
-                        in_cur.add(nb)
-                        if nb != start and nb != end:
-                            self._set_cell(*nb, 'open')
-                        if nb in g_other:
-                            total = ng + g_other[nb]
-                            if total < best:
-                                best = total
-                                meet = nb
-                break
+                        heapq.heappush(open_forward, (new_g + self._h(neighbor, end, hname), counter, neighbor))
+                        opened_by[neighbor] = 'start'
+                        if not instant and neighbor != start and neighbor != end:
+                            self._set_cell(*neighbor, 'open')
 
-            max_open = max(max_open, len(inf_f) + len(inf_b))
+            # --- BACKWARD ---
+            while open_backward:
+                _, _, current_b = heapq.heappop(open_backward)
+                if current_b not in closed: break
+            else: current_b = None
 
-            min_f = of[0][0] if of else float('inf')
-            min_b = ob[0][0] if ob else float('inf')
-            if best <= min(min_f, min_b):
-                self._finish_bidir(meet, cf, cb, gf, len(clf)+len(clb), max_open, t0, ops)
-                return
+            if current_b:
+                ops += 1
+                closed.add(current_b)
+                if not instant and current_b != start and current_b != end:
+                    self._set_cell(*current_b, 'closed')
 
-            delay = max(1, 101 - self.speed.get())
+                for neighbor, cost in self._neighbors(current_b):
+                    if neighbor in closed: continue
+                    if opened_by.get(neighbor) == 'start':
+                        return self._finish_bidir(neighbor, current_b, came_from, len(closed), max_open, t0, ops, instant)
+
+                    new_g = g[current_b] + cost
+                    ops += 1
+                    if opened_by.get(neighbor) != 'end' or new_g < g.get(neighbor, float('inf')):
+                        g[neighbor] = new_g
+                        came_from[neighbor] = current_b
+                        counter += 1
+                        heapq.heappush(open_backward, (new_g + self._h(neighbor, start, hname), counter, neighbor))
+                        opened_by[neighbor] = 'end'
+                        if not instant and neighbor != start and neighbor != end:
+                            self._set_cell(*neighbor, 'open')
+
+            max_open = max(max_open, len(open_forward) + len(open_backward))
+            
+            if instant: return None
+            delay = max(1, MAX_SPEED_DELAY - self.speed.get())
             self.after(delay, step)
 
-        step()
+        if instant:
+            while True:
+                res = step()
+                if res is not None: return res
+        else:
+            step()
 
     def _set_stats(self, cost, visited, max_open, elapsed, ops):
         self.stats['cost'].set(cost)
@@ -504,32 +547,36 @@ class App(tk.Tk):
         self.stats['ops'].set(str(ops))
         self.running = False
         self.visualized = True
-        self.btn_start.config(text='Start', bg='#4CAF50')
+        self.btn_start.config(text='Start', bg=THEME['btn_start'])
 
     def _draw_path(self, path):
         for p in path:
             if p != self.start and p != self.end:
                 self._set_cell(*p, 'path')
 
-    def _finish(self, path, g, visited, max_open, t0, ops):
+    def _finish(self, path, g, visited, max_open, t0, ops, instant=False):
         elapsed = (time.perf_counter() - t0) * 1000
-        if path is None:
-            self._set_stats('-', visited, max_open, elapsed, ops)
-        else:
-            self._draw_path(path)
-            self._set_stats(f'{g[self.end]:.2f}', visited, max_open, elapsed, ops)
+        cost = '-' if path is None else f'{g[self.end]:.2f}'
+        
+        if instant:
+            return {'cost': cost, 'visited': visited, 'max_open': max_open, 'time': f'{elapsed:.2f}', 'ops': ops}
+            
+        if path: self._draw_path(path)
+        self._set_stats(cost, visited, max_open, elapsed, ops)
 
-    def _build_bidir_path(self, meet, cf, cb):
+    def _build_bidir_path(self, touch_forward, touch_backward, came_from):
         path = []
-        n = meet
-        while n:
-            path.append(n)
-            n = cf.get(n)
+        node = touch_forward
+        while node:
+            path.append(node)
+            node = came_from.get(node)
         path.reverse()
-        n = cb.get(meet)
-        while n:
-            path.append(n)
-            n = cb.get(n)
+        
+        node = touch_backward
+        while node:
+            path.append(node)
+            node = came_from.get(node)
+            
         return path
 
     def _path_cost(self, path):
@@ -539,64 +586,31 @@ class App(tk.Tk):
             max(abs(path[i][0]-path[i+1][0]), abs(path[i][1]-path[i+1][1]))
             for i in range(len(path)-1))
 
-    def _finish_bidir(self, meet, cf, cb, gf, visited, max_open, t0, ops):
+    def _finish_bidir(self, touch_forward, touch_backward, came_from, visited, max_open, t0, ops, instant=False):
         elapsed = (time.perf_counter() - t0) * 1000
-        if meet is None:
+        
+        if touch_forward is None:
+            if instant: return {'cost': '-', 'visited': visited, 'max_open': max_open, 'time': f'{elapsed:.2f}', 'ops': ops}
             self._set_stats('-', visited, max_open, elapsed, ops)
         else:
-            path = self._build_bidir_path(meet, cf, cb)
+            path = self._build_bidir_path(touch_forward, touch_backward, came_from)
+            cost = f'{self._path_cost(path):.2f}'
+            if instant: return {'cost': cost, 'visited': visited, 'max_open': max_open, 'time': f'{elapsed:.2f}', 'ops': ops}
             self._draw_path(path)
-            self._set_stats(f'{self._path_cost(path):.2f}',
-                           visited, max_open, elapsed, ops)
+            self._set_stats(cost, visited, max_open, elapsed, ops)
 
     # * ── Compare All ────
-    def _astar_instant(self, hname):
-        # Chạy A* tức thì, tái sử dụng _neighbors, chỉ thay heuristic
-        start, end = self.start, self.end
-        g = {start: 0}
-        came = {start: None}
-        cnt = ops = 0
-        oset = [(self._h(start, end, hname), cnt, start)]
-        in_open = {start}
-        closed = set()
-        max_open = 1
-        t0 = time.perf_counter()
-
-        while oset:
-            _, _, cur = heapq.heappop(oset)
-            in_open.discard(cur)
-            ops += 1
-            if cur == end:
-                elapsed = (time.perf_counter() - t0) * 1000
-                return {'cost':f'{g[end]:.2f}',
-                        'visited':len(closed),'max_open':max_open,
-                        'time':f'{elapsed:.2f}','ops':ops}
-            closed.add(cur)
-            for nb, cost in self._neighbors(cur):
-                if nb in closed:
-                    continue
-                ng = g[cur] + cost
-                ops += 1
-                if nb not in g or ng < g[nb]:
-                    g[nb] = ng
-                    came[nb] = cur
-                    cnt += 1
-                    heapq.heappush(oset, (ng + self._h(nb, end, hname), cnt, nb))
-                    in_open.add(nb)
-            max_open = max(max_open, len(in_open))
-
-        elapsed = (time.perf_counter() - t0) * 1000
-        return {'cost':'-',
-                'visited':len(closed),'max_open':max_open,
-                'time':f'{elapsed:.2f}','ops':ops}
-
     def _compare_all(self):
         if self.running:
             return
         heuristics = ['Euclidean','Manhattan','Octile','Chebyshev','Dijkstra (h=0)']
         results = []
+        is_bidir = self.bidir.get()
         for h in heuristics:
-            r = self._astar_instant(h)
+            if is_bidir:
+                r = self._run_bidir(hname=h, instant=True)
+            else:
+                r = self._run_astar(hname=h, instant=True)
             r['heuristic'] = h
             results.append(r)
 
@@ -609,13 +623,13 @@ class App(tk.Tk):
         keys = ['heuristic','cost','visited','max_open','time','ops']
 
         for j, col in enumerate(cols):
-            tk.Label(win, text=col, font=('Segoe UI',9,'bold'), bg='#E0E0E0',
+            tk.Label(win, text=col, font=THEME['font_bold'], bg=COLOR['compare_bg_header'],
                      relief='ridge', padx=6, pady=4).grid(row=0, column=j, sticky='nsew')
 
         for i, r in enumerate(results):
-            bg = '#F9FBE7' if r['cost'] != '-' else '#FFEBEE'
+            bg = COLOR['compare_bg_row'] if r['cost'] != '-' else COLOR['compare_bg_err']
             for j, k in enumerate(keys):
-                tk.Label(win, text=str(r[k]), font=('Segoe UI',9), bg=bg,
+                tk.Label(win, text=str(r[k]), font=THEME['font_main'], bg=bg,
                          relief='ridge', padx=6, pady=3).grid(row=i+1, column=j, sticky='nsew')
 
         for j in range(len(cols)):
