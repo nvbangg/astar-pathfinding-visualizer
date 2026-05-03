@@ -442,19 +442,28 @@ class App(tk.Tk):
 
     def _run_bidir(self, hname=None, instant=False):
         start, end = self.start, self.end
-        g = {start: 0, end: 0}
-        came_from = {start: None, end: None}
-        opened_by = {start: 'start', end: 'end'}
-        closed = set()
+        g_f = {start: 0.0}
+        g_b = {end: 0.0}
+        came_from_f = {start: None}
+        came_from_b = {end: None}
+
+        closed_f = set()
+        closed_b = set()
+
         counter = 0
-        ops = 2
-        open_forward = [(self._h(start, end, hname), counter, start)]; counter += 1
-        open_backward = [(self._h(end, start, hname), counter, end)]; counter += 1
+        open_forward = [(0.0, counter, start)]; counter += 1
+        open_backward = [(0.0, counter, end)]; counter += 1
+
+        best_cost = float('inf')
+        best_touch = (None, None)
+
         max_open = 2
+        ops = 2
         t0 = time.perf_counter()
 
         def step():
-            nonlocal counter, ops, max_open
+            nonlocal counter, ops, max_open, best_cost, best_touch
+
             if not instant:
                 if not self.running: return False
                 if self.paused and not self.step_mode:
@@ -465,75 +474,94 @@ class App(tk.Tk):
                     return False
                 self.step_event = False
 
+            # Stop condition
+            min_g_f = open_forward[0][0] if open_forward else float('inf')
+            min_g_b = open_backward[0][0] if open_backward else float('inf')
+            if best_cost <= min_g_f + min_g_b:
+                return self._finish_bidir(best_touch[0], best_touch[1],
+                                          came_from_f, came_from_b,
+                                          len(closed_f) + len(closed_b),
+                                          max_open, t0, ops, instant)
+
             if not open_forward or not open_backward:
-                return self._finish_bidir(None, None, came_from, len(closed), max_open, t0, ops, instant)
+                return self._finish_bidir(None, None, came_from_f, came_from_b,
+                                          len(closed_f) + len(closed_b),
+                                          max_open, t0, ops, instant)
 
-            # --- FORWARD ---
+            # --- Forward ---
             while open_forward:
-                _, _, current = heapq.heappop(open_forward)
-                if current not in closed: break
-            else: current = None
+                gcur, _, current = heapq.heappop(open_forward)
+                if current not in closed_f: break
+            else:
+                current = None
 
-            if current:
+            if current is not None:
                 ops += 1
-                closed.add(current)
+                closed_f.add(current)
                 if not instant and current != start and current != end:
                     self._set_cell(*current, 'closed')
 
                 for neighbor, cost in self._neighbors(current):
-                    if neighbor in closed: continue
-                    if opened_by.get(neighbor) == 'end':
-                        return self._finish_bidir(current, neighbor, came_from, len(closed), max_open, t0, ops, instant)
-
-                    new_g = g[current] + cost
-                    if opened_by.get(neighbor) != 'start' or new_g < g.get(neighbor, float('inf')):
-                        if opened_by.get(neighbor) is None: ops += 1
-                        g[neighbor] = new_g
-                        came_from[neighbor] = current
+                    if neighbor in closed_f: 
+                        continue
+                    new_g = g_f[current] + cost
+                    if new_g < g_f.get(neighbor, float('inf')):
+                        g_f[neighbor] = new_g
+                        came_from_f[neighbor] = current
                         counter += 1
-                        heapq.heappush(open_forward, (new_g + self._h(neighbor, end, hname), counter, neighbor))
-                        opened_by[neighbor] = 'start'
+                        heapq.heappush(open_forward, (new_g, counter, neighbor))
                         if not instant and neighbor != start and neighbor != end:
                             self._set_cell(*neighbor, 'open')
 
-            # --- BACKWARD ---
-            while open_backward:
-                _, _, current_b = heapq.heappop(open_backward)
-                if current_b not in closed: break
-            else: current_b = None
+                    if neighbor in g_b:
+                        cand = new_g + g_b[neighbor]
+                        if cand < best_cost:
+                            best_cost = cand
+                            best_touch = (current, neighbor)
 
-            if current_b:
+            # --- Backward ---
+            while open_backward:
+                gcur_b, _, current_b = heapq.heappop(open_backward)
+                if current_b not in closed_b: break
+            else:
+                current_b = None
+
+            if current_b is not None:
                 ops += 1
-                closed.add(current_b)
+                closed_b.add(current_b)
                 if not instant and current_b != start and current_b != end:
                     self._set_cell(*current_b, 'closed')
 
                 for neighbor, cost in self._neighbors(current_b):
-                    if neighbor in closed: continue
-                    if opened_by.get(neighbor) == 'start':
-                        return self._finish_bidir(neighbor, current_b, came_from, len(closed), max_open, t0, ops, instant)
-
-                    new_g = g[current_b] + cost
-                    if opened_by.get(neighbor) != 'end' or new_g < g.get(neighbor, float('inf')):
-                        if opened_by.get(neighbor) is None: ops += 1
-                        g[neighbor] = new_g
-                        came_from[neighbor] = current_b
+                    if neighbor in closed_b:
+                        continue
+                    new_g = g_b[current_b] + cost
+                    if new_g < g_b.get(neighbor, float('inf')):
+                        g_b[neighbor] = new_g
+                        came_from_b[neighbor] = current_b
                         counter += 1
-                        heapq.heappush(open_backward, (new_g + self._h(neighbor, start, hname), counter, neighbor))
-                        opened_by[neighbor] = 'end'
+                        heapq.heappush(open_backward, (new_g, counter, neighbor))
                         if not instant and neighbor != start and neighbor != end:
                             self._set_cell(*neighbor, 'open')
 
+                    if neighbor in g_f:
+                        cand = new_g + g_f[neighbor]
+                        if cand < best_cost:
+                            best_cost = cand
+                            best_touch = (neighbor, current_b)
+
             max_open = max(max_open, len(open_forward) + len(open_backward))
-            
-            if instant: return None
+
+            if instant: 
+                return None
             delay = max(1, MAX_SPEED_DELAY - self.speed.get())
             self.after(delay, step)
 
         if instant:
             while True:
                 res = step()
-                if res is not None: return res
+                if res is not None: 
+                    return res
         else:
             step()
 
@@ -562,40 +590,50 @@ class App(tk.Tk):
         if path: self._draw_path(path)
         self._set_stats(cost, visited, max_open, elapsed, ops)
 
-    def _build_bidir_path(self, touch_forward, touch_backward, came_from):
+    def _build_bidir_path(self, touch_forward, touch_backward, came_from_f, came_from_b):
         path = []
         node = touch_forward
-        while node:
+        while node is not None:
             path.append(node)
-            node = came_from.get(node)
+            node = came_from_f.get(node)
         path.reverse()
-        
+
         node = touch_backward
-        while node:
+        if path and node == path[-1]:
+            node = came_from_b.get(node)
+        while node is not None:
             path.append(node)
-            node = came_from.get(node)
-            
+            node = came_from_b.get(node)
+
         return path
 
-    def _path_cost(self, path):
-        return sum(
-            math.hypot(path[i][0]-path[i+1][0], path[i][1]-path[i+1][1])
-            if not self.diag_cost1.get() else
-            max(abs(path[i][0]-path[i+1][0]), abs(path[i][1]-path[i+1][1]))
-            for i in range(len(path)-1))
-
-    def _finish_bidir(self, touch_forward, touch_backward, came_from, visited, max_open, t0, ops, instant=False):
+    def _finish_bidir(self, touch_forward, touch_backward, came_from_f, came_from_b,
+                      visited, max_open, t0, ops, instant=False):
         elapsed = (time.perf_counter() - t0) * 1000
-        
+
         if touch_forward is None:
             if instant: return {'cost': '-', 'visited': visited, 'max_open': max_open, 'time': f'{elapsed:.2f}', 'ops': ops}
             self._set_stats('-', visited, max_open, elapsed, ops)
         else:
-            path = self._build_bidir_path(touch_forward, touch_backward, came_from)
+            path = self._build_bidir_path(touch_forward, touch_backward, came_from_f, came_from_b)
             cost = f'{self._path_cost(path):.2f}'
             if instant: return {'cost': cost, 'visited': visited, 'max_open': max_open, 'time': f'{elapsed:.2f}', 'ops': ops}
             self._draw_path(path)
             self._set_stats(cost, visited, max_open, elapsed, ops)
+
+    def _path_cost(self, path):
+        if not path or len(path) < 2:
+            return 0.0
+        cost = 0.0
+        for i in range(1, len(path)):
+            r1, c1 = path[i-1]
+            r2, c2 = path[i]
+            dr, dc = abs(r2 - r1), abs(c2 - c1)
+            if dr == 1 and dc == 1:
+                cost += 1 if self.diag_cost1.get() else math.sqrt(2)
+            else:
+                cost += 1
+        return cost
 
     # * ── Compare All ────
     def _compare_all(self):
