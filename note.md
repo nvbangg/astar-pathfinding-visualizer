@@ -54,3 +54,13 @@ Hiển thị kết quả sau khi thuật toán kết thúc:
 - Code tối ưu ngắn gọn đơn giản nhất có thể, tận dụng những thứ đã có sẵn mà không cần code lại, không có code thừa. Tên biến đặt dễ hiểu không viết tắt khi không cần thiết
 - Chỉ comment bằng tiếng việt ở những nơi thật sự cần thiết để giải thích
 - Đảm bảo thuật toán hoạt động chính xác, ngắn gọn,rõ ràng, dễ hiểu, dễ bảo trì
+
+# 3. Xây dựng bộ test
+- Yêu cầu: Giữ nguyên main.py, tạo file mới test_runner.py import class App từ main.py Nhờ vào hàm _run_astar(instant=True) đã xây dựng, bạn có thể gọi trực tiếp nó từ file test để lấy kết quả mà không cần chạy giao diện người dùng.
+- Số lượng tổ hợp kết quả: 
+Tổ hợp 1: Allow Diagonal = Tắt (Các option con không quan trọng).
+Tổ hợp 2: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Tắt.
+Tổ hợp 3: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Tắt.
+Tổ hợp 4: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Bật.
+Tổ hợp 5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
+- 
