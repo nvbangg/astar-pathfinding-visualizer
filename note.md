@@ -56,11 +56,67 @@ Hiển thị kết quả sau khi thuật toán kết thúc:
 - Đảm bảo thuật toán hoạt động chính xác, ngắn gọn,rõ ràng, dễ hiểu, dễ bảo trì
 
 # 3. Xây dựng bộ test
-- Yêu cầu: Giữ nguyên main.py, tạo file mới test_runner.py import class App từ main.py Nhờ vào hàm _run_astar(instant=True) đã xây dựng, bạn có thể gọi trực tiếp nó từ file test để lấy kết quả mà không cần chạy giao diện người dùng.
-- Số lượng tổ hợp kết quả: 
+## 3.1 Yêu cầu: 
+- Giữ nguyên main.py, tạo file mới test_runner.py import class App từ main.py Nhờ vào hàm _run_astar(instant=True) đã xây dựng, bạn có thể gọi trực tiếp nó từ file test để lấy kết quả mà không cần chạy giao diện người dùng.
+- Khi so sánh Actual và Expected, bạn nên sử dụng abs(actual - expected) < 0.01 thay vì so sánh bằng (==) để tránh lỗi do Python làm tròn số
+- Định dạng hiển thị: Khi in Actual và Expected, hãy dùng :.2f để luôn hiển thị 2 chữ số sau dấu phẩy cho đẹp và đồng nhất.
+
+
+## 3.2 Mẫu json chứa dữ liệu bộ test: file test_cases.json
+```json
+[
+  {
+    "name": "Mô tả kịch bản test",
+    "matrix": [
+      [0, 0, 0],
+      [0, 1, 0],
+      [0, 0, 0]
+    ],
+    "start": [0, 0],
+    "end": [2, 2],
+    "expected_costs": {
+      "no_diagonal": 5.0,
+      "diagonal_normal": 3.83,
+      "diagonal_dont_cross": 5.0,
+      "diagonal_cost1": 3.0,
+      "diagonal_cost1_dont_cross": 5.0
+    }
+  }
+]
+```
+
+## 3.2 Số lượng tổ hợp kết quả: 
 Tổ hợp 1: Allow Diagonal = Tắt (Các option con không quan trọng).
 Tổ hợp 2: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Tắt.
 Tổ hợp 3: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Tắt.
 Tổ hợp 4: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Bật.
 Tổ hợp 5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
-- 
+
+## 3.3 Kết quả hiển thị:
+
+----------
+SCENARIO 1: Mô tả kịch bản test
+
+[T1_No_Diag]
+  - Euclidean  (Bi:OFF): PASS  | (Bi:ON): PASS
+  - Manhattan  (Bi:OFF): PASS  | (Bi:ON): PASS
+  - Octile     (Bi:OFF): PASS  | (Bi:ON): PASS
+  - Chebyshev  (Bi:OFF): PASS  | (Bi:ON): PASS
+  - Dijkstra   (Bi:OFF): PASS  | (Bi:ON): PASS
+[T2_Diag_Normal]
+  - Euclidean  (Bi:OFF): PASS  | (Bi:ON): FAIL (Expected: 3.83, Actual: 4.00)
+  - Manhattan  (Bi:OFF): PASS  | (Bi:ON): PASS
+  ... (tương tự)
+[T3_Diag_Dont_Cross]
+  ... (tương tự)
+[T4_Diag_Cost1_Normal]
+  ... (tương tự)
+[T5_Diag_Cost1_Dont_Cross]
+  ... (tương tự)
+
+RESULT: 49/50 PASS.
+----------
+----------
+SCENARIO 2: Mô tả kịch bản test 2
+...
+----------
