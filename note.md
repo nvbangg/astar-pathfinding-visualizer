@@ -23,7 +23,7 @@ Sắp xếp theo thứ tự từ trên xuống:
 - Heuristic (Dropdown): Euclidean, Manhattan, Octile, Chebyshev, Dijkstra (h=0).
 - Options (Checkboxes):
     - Allow Diagonal (Cho phép đi chéo). Nếu bật, hiển thị thêm:
-        - Allow Cross Corners: Cho phép đi sát 1 góc tường. Vẫn bị Chặn đi chéo khi bị kẹp giữa hai vật cản
+        - Don't Cross Corners: Không cho phép đi chéo 1 góc tường. Bình thường Vẫn bị Chặn đi chéo khi bị kẹp giữa hai vật cản nhưng vẫn đi chéo 1 góc tường được.
         - Diagonal Cost = 1 (Mặc định không tích là $1.41$).
     - Bi-directional (Tìm kiếm hai chiều từ Start và End).
 - Speed (Slider): Điều chỉnh tốc độ hiển thị quá trình tìm kiếm.

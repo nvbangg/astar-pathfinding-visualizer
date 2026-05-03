@@ -16,27 +16,27 @@ DELAY_START = 10
 DELAY_PAUSE = 50     
 MAX_SPEED_DELAY = 101 # base ms for speed calculation
 
-THEME = {
-    'bg_main': '#FAFAFA', 'bg_panel': '#F5F5F5',
-    'btn_start': '#4CAF50', 'btn_pause': '#FFC107',
-    'btn_step': '#607D8B', 'btn_clear_path': '#FF9800',
-    'btn_clear_walls': '#E53935', 'btn_random': '#795548',
-    'btn_compare': '#3F51B5', 'btn_fg': 'white',
-    'font_main': ('Segoe UI', 9),
-    'font_bold': ('Segoe UI', 9, 'bold'),
-    'font_title': ('Segoe UI', 12, 'bold'),
+FONT = {
+    'main':  ('Segoe UI', 9),
+    'bold':  ('Segoe UI', 9, 'bold'),
+    'title': ('Segoe UI', 12, 'bold'),
 }
 
 COLOR = {
     'empty': '#FFFFFF', 'wall': '#555555',
     'start': '#2E7D32', 'end': '#D32F2F',
-    'open': "#74D377", 'closed': '#A5D6A7',
-    'path': '#FFD600', 'grid': '#E0E0E0',
-    'compare_bg_header': '#E0E0E0',
-    'compare_bg_row': '#F9FBE7',
-    'compare_bg_err': '#FFEBEE',
+    'open': '#74D377',  'closed': '#A5D6A7',
+    'path': '#FFD600',  'grid': '#E0E0E0',
+    'bg_main': '#FAFAFA', 'bg_panel': '#F5F5F5',
+    'btn_fg': 'white',
+    'btn_start': '#4CAF50', 'btn_pause': '#FFC107',
+    'btn_step': '#607D8B',  'btn_clear_path': '#FF9800',
+    'btn_clear_walls': '#E53935', 'btn_random': '#795548',
+    'btn_compare': '#3F51B5',
+    'compare_header': '#E0E0E0',
+    'compare_row': '#F9FBE7',
+    'compare_err': '#FFEBEE',
 }
-# -------------------------------
 
 class App(tk.Tk):
     def __init__(self):
@@ -65,22 +65,22 @@ class App(tk.Tk):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
-        self.canvas = tk.Canvas(self, bg=THEME['bg_main'], highlightthickness=0)
+        self.canvas = tk.Canvas(self, bg=COLOR['bg_main'], highlightthickness=0)
         self.canvas.grid(row=0, column=0, sticky='nsew')
         self.canvas.bind('<Button-1>', self._on_press)
         self.canvas.bind('<B1-Motion>', self._on_drag)
         self.canvas.bind('<ButtonRelease-1>', self._on_release)
 
-        panel = tk.Frame(self, width=260, bg=THEME['bg_panel'], padx=12, pady=10)
+        panel = tk.Frame(self, width=260, bg=COLOR['bg_panel'], padx=12, pady=10)
         panel.grid(row=0, column=1, sticky='ns')
         panel.grid_propagate(False)
 
         # Settings
-        tk.Label(panel, text='Settings', font=THEME['font_title'],
-                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Settings', font=FONT['title'],
+                 bg=COLOR['bg_panel']).pack(anchor='w', pady=(0,6))
 
-        tk.Label(panel, text='Heuristic:', bg=THEME['bg_panel'],
-                 font=THEME['font_main']).pack(anchor='w')
+        tk.Label(panel, text='Heuristic:', bg=COLOR['bg_panel'],
+                 font=FONT['main']).pack(anchor='w')
         self.heuristic = ttk.Combobox(panel, state='readonly', width=22,
             values=['Euclidean','Manhattan','Octile','Chebyshev','Dijkstra (h=0)'])
         self.heuristic.set('Euclidean')
@@ -92,70 +92,69 @@ class App(tk.Tk):
         self.bidir = tk.BooleanVar()
 
         tk.Checkbutton(panel, text='Allow Diagonal', variable=self.allow_diag,
-                       bg=THEME['bg_panel'], font=THEME['font_main'],
+                       bg=COLOR['bg_panel'], font=FONT['main'],
                        command=self._toggle_diag).pack(anchor='w')
-        self.cb_cross = tk.Checkbutton(panel, text='Allow Cross Corners',
-                       variable=self.cross_corner, bg=THEME['bg_panel'], font=THEME['font_main'])
+        self.cb_cross = tk.Checkbutton(panel, text="Don't Cross Corners",
+                       variable=self.cross_corner, bg=COLOR['bg_panel'], font=FONT['main'])
         self.cb_cross.pack(anchor='w', padx=(16,0))
         self.cb_dcost = tk.Checkbutton(panel, text='Diagonal Cost = 1',
-                       variable=self.diag_cost1, bg=THEME['bg_panel'], font=THEME['font_main'])
+                       variable=self.diag_cost1, bg=COLOR['bg_panel'], font=FONT['main'])
         self.cb_dcost.pack(anchor='w', padx=(16,0))
         tk.Checkbutton(panel, text='Bi-directional', variable=self.bidir,
-                       bg=THEME['bg_panel'], font=THEME['font_main']).pack(anchor='w')
+                       bg=COLOR['bg_panel'], font=FONT['main']).pack(anchor='w')
 
-        tk.Label(panel, text='Speed:', bg=THEME['bg_panel'],
-                 font=THEME['font_main']).pack(anchor='w', pady=(8,0))
+        tk.Label(panel, text='Speed:', bg=COLOR['bg_panel'],
+                 font=FONT['main']).pack(anchor='w', pady=(8,0))
         self.speed = tk.Scale(panel, from_=1, to=100, orient='horizontal',
-                              bg=THEME['bg_panel'], highlightthickness=0, length=220)
+                              bg=COLOR['bg_panel'], highlightthickness=0, length=220)
         self.speed.set(DEFAULT_SPEED)
         self.speed.pack(anchor='w')
 
-        # Controls
         ttk.Separator(panel, orient='horizontal').pack(fill='x', pady=8)
-        tk.Label(panel, text='Controls', font=THEME['font_title'],
-                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Controls', font=FONT['title'],
+                 bg=COLOR['bg_panel']).pack(anchor='w', pady=(0,6))
 
-        bf = tk.Frame(panel, bg=THEME['bg_panel'])
+        bf = tk.Frame(panel, bg=COLOR['bg_panel'])
         bf.pack(fill='x')
 
-        self.btn_start = tk.Button(bf, text='Start', width=12, bg=THEME['btn_start'],
-                                   fg=THEME['btn_fg'], font=THEME['font_bold'],
+        self.btn_start = tk.Button(bf, text='Start', width=12, bg=COLOR['btn_start'],
+                                   fg=COLOR['btn_fg'], font=FONT['bold'],
                                    relief='flat', command=self._toggle_run)
         self.btn_start.grid(row=0, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Next Step', width=12, bg=THEME['btn_step'], fg=THEME['btn_fg'],
-                  font=THEME['font_main'], relief='flat',
+        tk.Button(bf, text='Next Step', width=12, bg=COLOR['btn_step'], fg=COLOR['btn_fg'],
+                  font=FONT['main'], relief='flat',
                   command=self._next_step).grid(row=0, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Clear Path', width=12, bg=THEME['btn_clear_path'], fg=THEME['btn_fg'],
-                  font=THEME['font_main'], relief='flat',
+        tk.Button(bf, text='Clear Path', width=12, bg=COLOR['btn_clear_path'], fg=COLOR['btn_fg'],
+                  font=FONT['main'], relief='flat',
                   command=self._clear_path).grid(row=1, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Clear Walls', width=12, bg=THEME['btn_clear_walls'], fg=THEME['btn_fg'],
-                  font=THEME['font_main'], relief='flat',
+        tk.Button(bf, text='Clear Walls', width=12, bg=COLOR['btn_clear_walls'], fg=COLOR['btn_fg'],
+                  font=FONT['main'], relief='flat',
                   command=self._clear_walls).grid(row=1, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Random Walls', width=12, bg=THEME['btn_random'], fg=THEME['btn_fg'],
-                  font=THEME['font_main'], relief='flat',
+        tk.Button(bf, text='Random Walls', width=12, bg=COLOR['btn_random'], fg=COLOR['btn_fg'],
+                  font=FONT['main'], relief='flat',
                   command=self._random_walls).grid(row=2, column=0, padx=2, pady=2)
-        tk.Button(bf, text='Random Maze', width=12, bg=THEME['btn_random'], fg=THEME['btn_fg'],
-                  font=THEME['font_main'], relief='flat',
+        tk.Button(bf, text='Random Maze', width=12, bg=COLOR['btn_random'], fg=COLOR['btn_fg'],
+                  font=FONT['main'], relief='flat',
                   command=self._random_maze).grid(row=2, column=1, padx=2, pady=2)
-        tk.Button(bf, text='Compare All', width=26, bg=THEME['btn_compare'], fg=THEME['btn_fg'],
-                  font=THEME['font_bold'], relief='flat',
+        tk.Button(bf, text='Compare All', width=26, bg=COLOR['btn_compare'], fg=COLOR['btn_fg'],
+                  font=FONT['bold'], relief='flat',
                   command=self._compare_all).grid(row=3, column=0, columnspan=2, padx=2, pady=2)
 
         # Statistics
         ttk.Separator(panel, orient='horizontal').pack(fill='x', pady=8)
-        tk.Label(panel, text='Statistics', font=THEME['font_title'],
-                 bg=THEME['bg_panel']).pack(anchor='w', pady=(0,6))
+        tk.Label(panel, text='Statistics', font=FONT['title'],
+                 bg=COLOR['bg_panel']).pack(anchor='w', pady=(0,6))
 
         labels = [('Path Cost','cost'),
                   ('Visited Nodes','visited'),('Max Open Nodes','max_open'),
                   ('Search Time','time'),('Operations','ops')]
         for text, key in labels:
-            f = tk.Frame(panel, bg=THEME['bg_panel'])
+            f = tk.Frame(panel, bg=COLOR['bg_panel'])
             f.pack(fill='x', pady=1)
-            tk.Label(f, text=f'{text}:', bg=THEME['bg_panel'],
-                     font=THEME['font_main']).pack(side='left')
-            tk.Label(f, textvariable=self.stats[key], bg=THEME['bg_panel'],
-                     font=THEME['font_bold']).pack(side='right')
+            tk.Label(f, text=f'{text}:', bg=COLOR['bg_panel'],
+                     font=FONT['main']).pack(side='left')
+            tk.Label(f, textvariable=self.stats[key], bg=COLOR['bg_panel'],
+                     font=FONT['bold']).pack(side='right')
 
     def _toggle_diag(self):
         st = 'normal' if self.allow_diag.get() else 'disabled'
@@ -239,17 +238,17 @@ class App(tk.Tk):
             if self.step_mode:
                 self.step_mode = False
                 self.paused = False
-                self.btn_start.config(text='Pause', bg=THEME['btn_pause'])
+                self.btn_start.config(text='Pause', bg=COLOR['btn_pause'])
             else:
                 self.paused = not self.paused
                 self.btn_start.config(text='Start' if self.paused else 'Pause',
-                                      bg=THEME['btn_start'] if self.paused else THEME['btn_pause'])
+                                      bg=COLOR['btn_start'] if self.paused else COLOR['btn_pause'])
         else:
             self._clear_path()
             self.running = True
             self.paused = False
             self.step_mode = False
-            self.btn_start.config(text='Pause', bg=THEME['btn_pause'])
+            self.btn_start.config(text='Pause', bg=COLOR['btn_pause'])
             self.after(DELAY_START, self._run_algorithm)
 
     def _next_step(self):
@@ -258,20 +257,20 @@ class App(tk.Tk):
             self.running = True
             self.paused = False
             self.step_mode = True
-            self.btn_start.config(text='Start', bg=THEME['btn_start'])
+            self.btn_start.config(text='Start', bg=COLOR['btn_start'])
             self.after(DELAY_START, self._run_algorithm)
         else:
             self.step_mode = True
             self.paused = False
             self.step_event = True
-            self.btn_start.config(text='Start', bg=THEME['btn_start'])
+            self.btn_start.config(text='Start', bg=COLOR['btn_start'])
 
     def _clear_path(self):
         self.running = False
         self.paused = False
         self.step_mode = False
         self.visualized = False
-        self.btn_start.config(text='Start', bg=THEME['btn_start'])
+        self.btn_start.config(text='Start', bg=COLOR['btn_start'])
         for r in range(ROWS):
             for c in range(COLS):
                 if (r,c) == self.start:
@@ -345,7 +344,7 @@ class App(tk.Tk):
     def _neighbors(self, pos):
         r, c = pos
         diag = self.allow_diag.get()
-        cross = self.cross_corner.get()
+        dont_cross = self.cross_corner.get()
         dcost = 1 if self.diag_cost1.get() else math.sqrt(2)
         result = []
         for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
@@ -357,13 +356,13 @@ class App(tk.Tk):
                 nr, nc = r+dr, c+dc
                 if 0 <= nr < ROWS and 0 <= nc < COLS and not self.grid_data[nr][nc]:
                     w1, w2 = self.grid_data[r+dr][c], self.grid_data[r][c+dc]
-                    if cross:
-                        # Cho phép sát 1 góc tường, chặn khi kẹp giữa 2 vật cản
-                        if w1 and w2:
+                    if dont_cross:
+                        # Tích vào Don't Cross: Không cho phép đi sát 1 góc tường
+                        if w1 or w2:
                             continue
                     else:
-                        # Mặc định: không cho đi sát góc tường
-                        if w1 or w2:
+                        # Bình thường (không tích): Cho phép sát 1 góc, chặn khi kẹp giữa 2 vật cản
+                        if w1 and w2:
                             continue
                     result.append(((nr,nc), dcost))
         return result
@@ -379,7 +378,8 @@ class App(tk.Tk):
         start, end = self.start, self.end
         g = {start: 0}
         came_from = {start: None}
-        counter = ops = 0
+        counter = 0
+        ops = 1
         open_set = [(self._h(start, end, hname), counter, start)]
         closed = set()
         max_open = 1
@@ -419,8 +419,9 @@ class App(tk.Tk):
             for neighbor, cost in self._neighbors(current):
                 if neighbor in closed: continue
                 new_g = g[current] + cost
-                ops += 1
                 if neighbor not in g or new_g < g[neighbor]:
+                    if neighbor not in g:
+                        ops += 1
                     g[neighbor] = new_g
                     came_from[neighbor] = current
                     counter += 1
@@ -447,7 +448,8 @@ class App(tk.Tk):
         came_from = {start: None, end: None}
         opened_by = {start: 'start', end: 'end'}
         closed = set()
-        counter = ops = 0
+        counter = 0
+        ops = 2
         open_forward = [(self._h(start, end, hname), counter, start)]; counter += 1
         open_backward = [(self._h(end, start, hname), counter, end)]; counter += 1
         max_open = 2
@@ -486,8 +488,8 @@ class App(tk.Tk):
                         return self._finish_bidir(current, neighbor, came_from, len(closed), max_open, t0, ops, instant)
 
                     new_g = g[current] + cost
-                    ops += 1
                     if opened_by.get(neighbor) != 'start' or new_g < g.get(neighbor, float('inf')):
+                        if opened_by.get(neighbor) is None: ops += 1
                         g[neighbor] = new_g
                         came_from[neighbor] = current
                         counter += 1
@@ -514,8 +516,8 @@ class App(tk.Tk):
                         return self._finish_bidir(neighbor, current_b, came_from, len(closed), max_open, t0, ops, instant)
 
                     new_g = g[current_b] + cost
-                    ops += 1
                     if opened_by.get(neighbor) != 'end' or new_g < g.get(neighbor, float('inf')):
+                        if opened_by.get(neighbor) is None: ops += 1
                         g[neighbor] = new_g
                         came_from[neighbor] = current_b
                         counter += 1
@@ -545,7 +547,7 @@ class App(tk.Tk):
         self.stats['ops'].set(str(ops))
         self.running = False
         self.visualized = True
-        self.btn_start.config(text='Start', bg=THEME['btn_start'])
+        self.btn_start.config(text='Start', bg=COLOR['btn_start'])
 
     def _draw_path(self, path):
         for p in path:
@@ -621,13 +623,13 @@ class App(tk.Tk):
         keys = ['heuristic','cost','visited','max_open','time','ops']
 
         for j, col in enumerate(cols):
-            tk.Label(win, text=col, font=THEME['font_bold'], bg=COLOR['compare_bg_header'],
+            tk.Label(win, text=col, font=FONT['bold'], bg=COLOR['compare_header'],
                      relief='ridge', padx=6, pady=4).grid(row=0, column=j, sticky='nsew')
 
         for i, r in enumerate(results):
-            bg = COLOR['compare_bg_row'] if r['cost'] != '-' else COLOR['compare_bg_err']
+            bg = COLOR['compare_row'] if r['cost'] != '-' else COLOR['compare_err']
             for j, k in enumerate(keys):
-                tk.Label(win, text=str(r[k]), font=THEME['font_main'], bg=bg,
+                tk.Label(win, text=str(r[k]), font=FONT['main'], bg=bg,
                          relief='ridge', padx=6, pady=3).grid(row=i+1, column=j, sticky='nsew')
 
         for j in range(len(cols)):
