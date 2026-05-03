@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Open 3x3 corner to corner",
+    "matrix": [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0]
+    ],
+    "start": [0, 0],
+    "end": [2, 2],
+    "expected_costs": {
+      "no_diagonal": 4.00,
+      "diagonal_normal": 2.83,
+      "diagonal_dont_cross": 2.83,
+      "diagonal_cost1": 2.00,
+      "diagonal_cost1_dont_cross": 2.00
+    }
+  },
+  {
+    "name": "Open 5x5 corner to corner",
+    "matrix": [
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0]
+    ],
+    "start": [0, 0],
+    "end": [4, 4],
+    "expected_costs": {
+      "no_diagonal": 8.00,
+      "diagonal_normal": 5.66,
+      "diagonal_dont_cross": 5.66,
+      "diagonal_cost1": 4.00,
+      "diagonal_cost1_dont_cross": 4.00
+    }
+  }
+]

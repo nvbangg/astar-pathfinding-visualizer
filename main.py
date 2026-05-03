@@ -349,19 +349,17 @@ class App(tk.Tk):
         result = []
         for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
             nr, nc = r+dr, c+dc
-            if 0 <= nr < ROWS and 0 <= nc < COLS and not self.grid_data[nr][nc]:
+            if 0 <= nr < self.ROWS and 0 <= nc < self.COLS and not self.grid_data[nr][nc]:
                 result.append(((nr,nc), 1))
         if diag:
             for dr, dc in [(-1,-1),(-1,1),(1,-1),(1,1)]:
                 nr, nc = r+dr, c+dc
-                if 0 <= nr < ROWS and 0 <= nc < COLS and not self.grid_data[nr][nc]:
+                if 0 <= nr < self.ROWS and 0 <= nc < self.COLS and not self.grid_data[nr][nc]:
                     w1, w2 = self.grid_data[r+dr][c], self.grid_data[r][c+dc]
                     if dont_cross:
-                        # Tích vào Don't Cross: Không cho phép đi sát 1 góc tường
                         if w1 or w2:
                             continue
                     else:
-                        # Bình thường (không tích): Cho phép sát 1 góc, chặn khi kẹp giữa 2 vật cản
                         if w1 and w2:
                             continue
                     result.append(((nr,nc), dcost))
