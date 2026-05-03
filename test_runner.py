@@ -1,5 +1,6 @@
 import json
 import math
+import os
 from main import App
 
 HEURISTICS = ['Euclidean', 'Manhattan', 'Octile', 'Chebyshev', 'Dijkstra (h=0)']
@@ -23,14 +24,16 @@ def run_one(app, heuristic, bidir):
         return app._run_bidir(hname=heuristic, instant=True)
     return app._run_astar(hname=heuristic, instant=True)
 
-def print_line(heur, bi, passed, expected, actual):
-    if passed:
-        print(f"  - {heur:<10} (Bi:{bi}): PASS")
-    else:
-        print(f"  - {heur:<10} (Bi:{bi}): FAIL (Expected: {expected:.2f}, Actual: {actual:.2f})")
+def format_result(ok, expected, actual):
+    if ok:
+        return "PASS"
+    return f"FAIL (Expected: {expected:.2f}, Actual: {actual:.2f})"
 
 def main():
-    with open(r'd:\AI\test_cases.json', 'r', encoding='utf-8') as f:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    test_file = os.path.join(base_dir, 'test_cases.json')
+
+    with open(test_file, 'r', encoding='utf-8') as f:
         scenarios = json.load(f)
 
     total = 0
@@ -52,39 +55,63 @@ def main():
                 continue
 
             print(f"[{mode_name}]")
+
             for heur in HEURISTICS:
-                for bi in ('OFF', 'ON'):
-                    total += 1
-                    app = App()
-                    app.withdraw()
+                # --- Run Bi:OFF ---
+                total += 1
+                app = App()
+                app.withdraw()
+                app.ROWS = rows
+                app.COLS = cols
+                app.grid_data = [row[:] for row in matrix]
+                app.start = start
+                app.end = end
+                app.allow_diag.set(flags['allow_diag'])
+                app.cross_corner.set(flags['dont_cross'])
+                app.diag_cost1.set(flags['diag_cost1'])
+                app.heuristic.set(heur)
+                app.bidir.set(False)
+                app.running = True
+                result_off = run_one(app, heur, False)
+                app.destroy()
 
-                    # Setup grid
-                    app.ROWS = rows
-                    app.COLS = cols
-                    app.grid_data = [row[:] for row in matrix]
-                    app.start = start
-                    app.end = end
+                actual_off = to_float(result_off.get('cost')) if result_off else None
+                if actual_off is None:
+                    actual_off = math.inf
+                ok_off = abs(actual_off - expected) < 0.01
+                if ok_off:
+                    passed += 1
 
-                    # Flags
-                    app.allow_diag.set(flags['allow_diag'])
-                    app.cross_corner.set(flags['dont_cross'])
-                    app.diag_cost1.set(flags['diag_cost1'])
-                    app.heuristic.set(heur)
-                    app.bidir.set(bi == 'ON')
-                    app.running = True
+                # --- Run Bi:ON ---
+                total += 1
+                app = App()
+                app.withdraw()
+                app.ROWS = rows
+                app.COLS = cols
+                app.grid_data = [row[:] for row in matrix]
+                app.start = start
+                app.end = end
+                app.allow_diag.set(flags['allow_diag'])
+                app.cross_corner.set(flags['dont_cross'])
+                app.diag_cost1.set(flags['diag_cost1'])
+                app.heuristic.set(heur)
+                app.bidir.set(True)
+                app.running = True
+                result_on = run_one(app, heur, True)
+                app.destroy()
 
-                    result = run_one(app, heur, bi == 'ON')
-                    app.destroy()
+                actual_on = to_float(result_on.get('cost')) if result_on else None
+                if actual_on is None:
+                    actual_on = math.inf
+                ok_on = abs(actual_on - expected) < 0.01
+                if ok_on:
+                    passed += 1
 
-                    actual = to_float(result.get('cost')) if result else None
-                    if actual is None:
-                        actual = math.inf
+                heur_name = heur.replace(' (h=0)', '')
+                left = format_result(ok_off, expected, actual_off)
+                right = format_result(ok_on, expected, actual_on)
 
-                    ok = abs(actual - expected) < 0.01
-                    if ok:
-                        passed += 1
-
-                    print_line(heur.replace(' (h=0)',''), bi, ok, expected, actual)
+                print(f"  - {heur_name:<10} (Bi:OFF): {left}  | (Bi:ON): {right}")
             print()
 
     print(f"RESULT: {passed}/{total} PASS.")
