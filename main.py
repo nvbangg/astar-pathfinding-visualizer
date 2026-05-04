@@ -154,9 +154,12 @@ class App(tk.Tk):
             for x in range(cols):
                 x1, y1 = x * CELL_SIZE, y * CELL_SIZE
                 color = COLORS['empty']
-                if (x, y) == self.start_node: color = COLORS['start']
-                elif (x, y) == self.end_node: color = COLORS['end']
-                elif self.grid_data[y][x]: color = COLORS['wall']
+                if (x, y) == self.start_node:
+                    color = COLORS["start"]
+                elif (x, y) == self.end_node:
+                    color = COLORS["end"]
+                elif self.grid_data[y][x]:
+                    color = COLORS["wall"]
                 
                 self.rectangles[(x, y)] = self.canvas.create_rectangle(
                     x1, y1, x1 + CELL_SIZE, y1 + CELL_SIZE,
@@ -255,15 +258,18 @@ class App(tk.Tk):
             for x in range(cols):
                 if (x, y) not in (self.start_node, self.end_node) and not self.grid_data[y][x]:
                     self._update_cell_color(x, y, 'empty')
-        for var in self.stats_vars.values(): var.set('-')
+        for var in self.stats_vars.values():
+            var.set("-")
 
     def _clear_all_walls(self):
         self.grid_data = [[0] * GRID_COLUMNS for _ in range(GRID_ROWS)]
         self._clear_search_path()
         for (x, y), rect_id in self.rectangles.items():
             color = 'empty'
-            if (x, y) == self.start_node: color = 'start'
-            elif (x, y) == self.end_node: color = 'end'
+            if (x, y) == self.start_node:
+                color = "start"
+            elif (x, y) == self.end_node:
+                color = "end"
             self.canvas.itemconfig(rect_id, fill=COLORS[color])
 
     def _generate_random_walls(self):
@@ -309,10 +315,14 @@ class App(tk.Tk):
     def _calculate_heuristic(self, node_a, node_b, name=None):
         dx, dy = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
         name = name or self.combobox_heuristic.get()
-        if name == "Manhattan": return dx + dy
-        if name == "Euclidean": return math.hypot(dx, dy)
-        if name == "Octile": return max(dx, dy) + (math.sqrt(2) - 1) * min(dx, dy)
-        if name == "Chebyshev": return max(dx, dy)
+        if name == "Manhattan":
+            return dx + dy
+        if name == "Euclidean":
+            return math.hypot(dx, dy)
+        if name == "Octile":
+            return max(dx, dy) + (math.sqrt(2) - 1) * min(dx, dy)
+        if name == "Chebyshev":
+            return max(dx, dy)
         return 0.0
 
     def _get_neighbors(self, position):
@@ -335,8 +345,10 @@ class App(tk.Tk):
                     wall_ortho_1 = self.grid_data[y + dy][x]
                     wall_ortho_2 = self.grid_data[y][x + dx]
                     if no_cross_corners:
-                        if wall_ortho_1 or wall_ortho_2: continue
-                    elif wall_ortho_1 and wall_ortho_2: continue
+                        if wall_ortho_1 or wall_ortho_2:
+                            continue
+                    elif wall_ortho_1 and wall_ortho_2:
+                        continue
                     neighbors_list.append(((nx, ny), diagonal_cost))
         return neighbors_list
 
@@ -353,11 +365,13 @@ class App(tk.Tk):
 
         while open_set:
             _, _, current = heapq.heappop(open_set)
-            if current in closed_set: continue
+            if current in closed_set:
+                continue
             
             operations_count += 1
             closed_set.add(current)
-            if current not in (start, end): animation_frames.append(("closed", current))
+            if current not in (start, end):
+                animation_frames.append(("closed", current))
 
             if current == end:
                 path = []
@@ -373,12 +387,14 @@ class App(tk.Tk):
                 }, animation_frames
 
             for neighbor, move_cost in self._get_neighbors(current):
-                if neighbor in closed_set: continue
+                if neighbor in closed_set:
+                    continue
                 new_g = g_scores[current] + move_cost
                 if neighbor not in g_scores or new_g < g_scores[neighbor]:
                     if neighbor not in g_scores:
                         operations_count += 1
-                        if neighbor != end: animation_frames.append(("open", neighbor))
+                        if neighbor != end:
+                            animation_frames.append(("open", neighbor))
                     g_scores[neighbor] = new_g
                     came_from[neighbor] = current
                     tie_break_counter += 1
