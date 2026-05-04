@@ -17,10 +17,10 @@ DELAY_PAUSE = 50
 MAX_SPEED_DELAY = 101
 
 COLORS = {
-    'empty': '#FFFFFF', 'wall': '#555555',
-    'start': '#2E7D32', 'end': '#D32F2F',
-    'open': '#74D377',  'closed': '#A5D6A7',
-    'path': '#FFD600',  'grid': '#E0E0E0',
+    'empty': '#FFFFFF', 'wall': '#808080',
+    'start': '#00DD00', 'end': '#EE4400',
+    'open': '#98FB98',  'closed': '#AFEEEE',
+    'path': '#FFFF00',  'grid': '#E0E0E0',
     'background_main': '#FAFAFA', 'background_panel': '#F5F5F5',
     'button_foreground': 'white',
     'button_start': '#4CAF50', 'button_pause': '#FF9800',
@@ -148,6 +148,7 @@ class App(tk.Tk):
         self.checkbutton_diagonal_cost_one.config(state=state_value)
 
     def _draw_grid(self):
+        self.canvas.delete('all')
         self.rectangles = {}
         rows, cols = len(self.grid_data), len(self.grid_data[0])
         for y in range(rows):
@@ -288,29 +289,25 @@ class App(tk.Tk):
         for y in range(1, rows - 1):
             for x in range(1, cols - 1):
                 self.grid_data[y][x] = 1
-                self._update_cell_color(x, y, 'wall')
-
-        stack = [(1, 1)]
-        self.grid_data[1][1] = 0
-        self._update_cell_color(1, 1, 'empty')
-
+        
+        stack = [DEFAULT_START_POS]
+        self.grid_data[DEFAULT_START_POS[1]][DEFAULT_START_POS[0]] = 0
+        
         while stack:
             cx, cy = stack[-1]
             neighbors = []
-            for dx, dy in [(0, -2), (2, 0), (0, 2), (-2, 0)]:
+            for dy, dx in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
                 nx, ny = cx + dx, cy + dy
-                if 1 <= nx < GRID_COLUMNS - 1 and 1 <= ny < GRID_ROWS - 1 and self.grid_data[ny][nx]:
-                    neighbors.append((nx, ny))
+                if 1 < nx < cols - 2 and 1 < ny < rows - 2 and self.grid_data[ny][nx]:
+                    neighbors.append((nx, ny, cx + dx // 2, cy + dy // 2))
             
             if neighbors:
-                nx, ny = random.choice(neighbors)
-                self.grid_data[ny][nx] = 0
-                self.grid_data[cy + (ny - cy) // 2][cx + (nx - cx) // 2] = 0
-                self._update_cell_color(nx, ny, 'empty')
-                self._update_cell_color(cx + (nx - cx) // 2, cy + (ny - cy) // 2, 'empty')
+                nx, ny, mx, my = random.choice(neighbors)
+                self.grid_data[my][mx] = self.grid_data[ny][nx] = 0
                 stack.append((nx, ny))
             else:
-                stack.pop()
+                stack.pop()                
+        self._draw_grid()
 
     def _calculate_heuristic(self, node_a, node_b, name=None):
         dx, dy = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
