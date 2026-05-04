@@ -9,7 +9,7 @@ CELL_SIZE = 25
 GRID_COLUMNS, GRID_ROWS = 45, 25
 DEFAULT_SPEED = 95
 DEFAULT_START_POS = (2, 2)
-DEFAULT_END_POS = (GRID_ROWS - 3, GRID_COLUMNS - 3)
+DEFAULT_END_POS = (GRID_COLUMNS - 3, GRID_ROWS - 3)
 WALL_PROBABILITY = 0.2
 
 DELAY_START = 10
@@ -34,7 +34,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("A* Pathfinding Visualizer")
-        self.geometry("1450x650")
+        self.geometry("1450x700")
 
         self.grid_data = [[0] * GRID_COLUMNS for _ in range(GRID_ROWS)]
         self.start_node = DEFAULT_START_POS
@@ -148,32 +148,27 @@ class App(tk.Tk):
         self.checkbutton_diagonal_cost_one.config(state=state_value)
 
     def _draw_grid(self):
-        self.canvas.delete('all')
         self.rectangles = {}
-        rows_count, columns_count = len(self.grid_data), len(self.grid_data[0])
-        for row_index in range(rows_count):
-            for column_index in range(columns_count):
-                x1, y1 = column_index * CELL_SIZE, row_index * CELL_SIZE
-                position = (row_index, column_index)
-                if position == self.start_node:
-                    color = COLORS["start"]
-                elif position == self.end_node:
-                    color = COLORS["end"]
-                elif self.grid_data[row_index][column_index]:
-                    color = COLORS["wall"]
-                else:
-                    color = COLORS["empty"]
-                self.rectangles[position] = self.canvas.create_rectangle(
+        rows, cols = len(self.grid_data), len(self.grid_data[0])
+        for y in range(rows):
+            for x in range(cols):
+                x1, y1 = x * CELL_SIZE, y * CELL_SIZE
+                color = COLORS['empty']
+                if (x, y) == self.start_node: color = COLORS['start']
+                elif (x, y) == self.end_node: color = COLORS['end']
+                elif self.grid_data[y][x]: color = COLORS['wall']
+                
+                self.rectangles[(x, y)] = self.canvas.create_rectangle(
                     x1, y1, x1 + CELL_SIZE, y1 + CELL_SIZE,
                     fill=color, outline=COLORS['grid'], width=1)
 
-    def _update_cell_color(self, row_index, column_index, cell_type):
-        self.canvas.itemconfig(self.rectangles[(row_index, column_index)], fill=COLORS[cell_type])
+    def _update_cell_color(self, x, y, cell_type):
+        self.canvas.itemconfig(self.rectangles[(x, y)], fill=COLORS[cell_type])
 
     def _get_cell_at(self, event):
-        column_index, row_index = event.x // CELL_SIZE, event.y // CELL_SIZE
-        if 0 <= row_index < len(self.grid_data) and 0 <= column_index < len(self.grid_data[0]):
-            return (row_index, column_index)
+        x, y = event.x // CELL_SIZE, event.y // CELL_SIZE
+        if 0 <= y < GRID_ROWS and 0 <= x < GRID_COLUMNS:
+            return (x, y)
         return None
 
     def _handle_mouse_press(self, event):
@@ -185,7 +180,8 @@ class App(tk.Tk):
         elif position == self.end_node and not self.is_visualized:
             self.dragged_node_type = 'end_node'
         elif position != self.start_node and position != self.end_node and not self.is_visualized:
-            self.draw_mode = 'erase' if self.grid_data[position[0]][position[1]] else 'wall'
+            x, y = position
+            self.draw_mode = 'erase' if self.grid_data[y][x] else 'wall'
             self._paint_wall(position)
 
     def _handle_mouse_drag(self, event):
@@ -193,7 +189,8 @@ class App(tk.Tk):
         if not position or self.is_running:
             return
         if self.dragged_node_type:
-            if position != self.start_node and position != self.end_node and not self.grid_data[position[0]][position[1]]:
+            x, y = position
+            if position != self.start_node and position != self.end_node and not self.grid_data[y][x]:
                 old_position = getattr(self, self.dragged_node_type)
                 self._update_cell_color(*old_position, 'empty')
                 setattr(self, self.dragged_node_type, position)
@@ -202,15 +199,15 @@ class App(tk.Tk):
             self._paint_wall(position)
 
     def _handle_mouse_release(self, event):
-        self.dragged_node_type = self.draw_mode = None
+        self.dragged_node_type = None
+        self.draw_mode = None
 
     def _paint_wall(self, position):
-        if position in (self.start_node, self.end_node):
-            return
-        row_index, column_index = position
+        x, y = position
         is_wall = (self.draw_mode == 'wall')
-        self.grid_data[row_index][column_index] = 1 if is_wall else 0
-        self._update_cell_color(row_index, column_index, 'wall' if is_wall else 'empty')
+        if self.grid_data[y][x] != is_wall:
+            self.grid_data[y][x] = is_wall
+            self._update_cell_color(x, y, 'wall' if is_wall else 'empty')
 
     def _toggle_execution(self):
         if self.is_running:
@@ -251,167 +248,149 @@ class App(tk.Tk):
             self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
 
     def _clear_search_path(self):
-        self.is_running = self.is_paused = self.is_step_mode = self.is_visualized = False
-        self.animation_frames, self.algorithm_result = [], None
-        self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
-        rows_count, columns_count = len(self.grid_data), len(self.grid_data[0])
-        for row_index in range(rows_count):
-            for column_index in range(columns_count):
-                pos = (row_index, column_index)
-                if pos == self.start_node:
-                    self._update_cell_color(row_index, column_index, "start")
-                elif pos == self.end_node:
-                    self._update_cell_color(row_index, column_index, "end")
-                elif self.grid_data[row_index][column_index]:
-                    self._update_cell_color(row_index, column_index, "wall")
-                else:
-                    self._update_cell_color(row_index, column_index, "empty")
-        for var in self.stats_vars.values():
-            var.set("-")
+        self.is_running = self.is_visualized = False
+        self.animation_frames = []
+        rows, cols = len(self.grid_data), len(self.grid_data[0])
+        for y in range(rows):
+            for x in range(cols):
+                if (x, y) not in (self.start_node, self.end_node) and not self.grid_data[y][x]:
+                    self._update_cell_color(x, y, 'empty')
+        for var in self.stats_vars.values(): var.set('-')
 
     def _clear_all_walls(self):
+        self.grid_data = [[0] * GRID_COLUMNS for _ in range(GRID_ROWS)]
         self._clear_search_path()
-        rows_count, columns_count = len(self.grid_data), len(self.grid_data[0])
-        self.grid_data = [[0] * columns_count for _ in range(rows_count)]
-        self._draw_grid()
+        for (x, y), rect_id in self.rectangles.items():
+            color = 'empty'
+            if (x, y) == self.start_node: color = 'start'
+            elif (x, y) == self.end_node: color = 'end'
+            self.canvas.itemconfig(rect_id, fill=COLORS[color])
 
     def _generate_random_walls(self):
         self._clear_all_walls()
-        for row_index in range(len(self.grid_data)):
-            for column_index in range(len(self.grid_data[0])):
-                if (row_index, column_index) not in (self.start_node, self.end_node) and random.random() < WALL_PROBABILITY:
-                    self.grid_data[row_index][column_index] = 1
-                    self._update_cell_color(row_index, column_index, 'wall')
+        rows, cols = len(self.grid_data), len(self.grid_data[0])
+        for y in range(rows):
+            for x in range(cols):
+                if (x, y) not in (self.start_node, self.end_node) and random.random() < WALL_PROBABILITY:
+                    self.grid_data[y][x] = 1
+                    self._update_cell_color(x, y, 'wall')
 
     def _generate_random_maze(self):
         # Sử dụng thuật toán Recursive Backtracking (DFS) để tạo mê cung dạng cây
         self._clear_all_walls()
-        rows_count, columns_count = len(self.grid_data), len(self.grid_data[0])
-        for row_index in range(1, rows_count - 1):
-            for column_index in range(1, columns_count - 1):
-                self.grid_data[row_index][column_index] = 1
-        
-        stack = [DEFAULT_START_POS]
-        self.grid_data[DEFAULT_START_POS[0]][DEFAULT_START_POS[1]] = 0
+        rows, cols = len(self.grid_data), len(self.grid_data[0])
+        for y in range(1, rows - 1):
+            for x in range(1, cols - 1):
+                self.grid_data[y][x] = 1
+                self._update_cell_color(x, y, 'wall')
+
+        stack = [(1, 1)]
+        self.grid_data[1][1] = 0
+        self._update_cell_color(1, 1, 'empty')
+
         while stack:
-            curr_row, curr_col = stack[-1]
+            cx, cy = stack[-1]
             neighbors = []
-            for dr, dc in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
-                neighbor_row, neighbor_col = curr_row + dr, curr_col + dc
-                if 1 < neighbor_row < rows_count - 2 and 1 < neighbor_col < columns_count - 2 and self.grid_data[neighbor_row][neighbor_col]:
-                    neighbors.append((neighbor_row, neighbor_col, curr_row + dr // 2, curr_col + dc // 2))
+            for dx, dy in [(0, -2), (2, 0), (0, 2), (-2, 0)]:
+                nx, ny = cx + dx, cy + dy
+                if 1 <= nx < GRID_COLUMNS - 1 and 1 <= ny < GRID_ROWS - 1 and self.grid_data[ny][nx]:
+                    neighbors.append((nx, ny))
+            
             if neighbors:
-                neighbor_row, neighbor_col, wall_row, wall_col = random.choice(neighbors)
-                self.grid_data[wall_row][wall_col] = self.grid_data[neighbor_row][neighbor_col] = 0
-                stack.append((neighbor_row, neighbor_col))
+                nx, ny = random.choice(neighbors)
+                self.grid_data[ny][nx] = 0
+                self.grid_data[cy + (ny - cy) // 2][cx + (nx - cx) // 2] = 0
+                self._update_cell_color(nx, ny, 'empty')
+                self._update_cell_color(cx + (nx - cx) // 2, cy + (ny - cy) // 2, 'empty')
+                stack.append((nx, ny))
             else:
                 stack.pop()
-        self._draw_grid()
 
     def _calculate_heuristic(self, node_a, node_b, name=None):
-        delta_row, delta_col = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
+        dx, dy = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
         name = name or self.combobox_heuristic.get()
-        if name == "Manhattan":
-            return delta_row + delta_col
-        if name == "Euclidean":
-            return math.hypot(delta_row, delta_col)
-        if name == "Octile":
-            return max(delta_row, delta_col) + (math.sqrt(2) - 1) * min(delta_row, delta_col)
-        if name == "Chebyshev":
-            return max(delta_row, delta_col)
+        if name == "Manhattan": return dx + dy
+        if name == "Euclidean": return math.hypot(dx, dy)
+        if name == "Octile": return max(dx, dy) + (math.sqrt(2) - 1) * min(dx, dy)
+        if name == "Chebyshev": return max(dx, dy)
         return 0.0
 
     def _get_neighbors(self, position):
-        row_index, column_index = position
+        x, y = position
         allow_diagonal = self.allow_diagonal.get()
         no_cross_corners = self.dont_cross_corners.get()
         diagonal_cost = 1.0 if self.diagonal_cost_one.get() else math.sqrt(2)
         neighbors_list = []
-        rows_count, columns_count = len(self.grid_data), len(self.grid_data[0])
+        rows, cols = len(self.grid_data), len(self.grid_data[0])
         
-        for delta_row, delta_col in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
-            neighbor_row, neighbor_col = row_index + delta_row, column_index + delta_col
-            if 0 <= neighbor_row < rows_count and 0 <= neighbor_col < columns_count and not self.grid_data[neighbor_row][neighbor_col]:
-                neighbors_list.append(((neighbor_row, neighbor_col), 1.0))
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < cols and 0 <= ny < rows and not self.grid_data[ny][nx]:
+                neighbors_list.append(((nx, ny), 1.0))
         
         if allow_diagonal:
-            for delta_row, delta_col in [(-1, -1), (-1, 1), (1, 1), (1, -1)]:
-                neighbor_row, neighbor_col = row_index + delta_row, column_index + delta_col
-                if 0 <= neighbor_row < rows_count and 0 <= neighbor_col < columns_count and not self.grid_data[neighbor_row][neighbor_col]:
-                    wall_orthogonal_1 = self.grid_data[row_index + delta_row][column_index]
-                    wall_orthogonal_2 = self.grid_data[row_index][column_index + delta_col]
+            for dx, dy in [(-1, -1), (1, -1), (1, 1), (-1, 1)]:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < cols and 0 <= ny < rows and not self.grid_data[ny][nx]:
+                    wall_ortho_1 = self.grid_data[y + dy][x]
+                    wall_ortho_2 = self.grid_data[y][x + dx]
                     if no_cross_corners:
-                        if wall_orthogonal_1 or wall_orthogonal_2:
-                            continue
-                    elif wall_orthogonal_1 and wall_orthogonal_2:
-                        continue
-                            
-                    neighbors_list.append(((neighbor_row, neighbor_col), diagonal_cost))
+                        if wall_ortho_1 or wall_ortho_2: continue
+                    elif wall_ortho_1 and wall_ortho_2: continue
+                    neighbors_list.append(((nx, ny), diagonal_cost))
         return neighbors_list
 
     def _run_astar_algorithm(self, heuristic_name=None):
-        start_node, end_node = self.start_node, self.end_node
-        g_scores = {start_node: 0.0}
-        came_from = {start_node: None}
-        
+        start, end = self.start_node, self.end_node
+        g_scores = {start: 0.0}
+        came_from = {start: None}
         # tie_break_counter giúp ưu tiên ô tìm thấy trước (FIFO) khi bằng điểm F
         tie_break_counter, operations_count = 0, 1
-        open_set = [(self._calculate_heuristic(start_node, end_node, heuristic_name), tie_break_counter, start_node)]
+        open_set = [(self._calculate_heuristic(start, end, heuristic_name), tie_break_counter, start)]
         closed_set = set()
         animation_frames = []
         start_time = time.perf_counter()
 
         while open_set:
-            _, _, current_node = heapq.heappop(open_set)
-            if current_node in closed_set:
-                continue
+            _, _, current = heapq.heappop(open_set)
+            if current in closed_set: continue
             
             operations_count += 1
-            closed_set.add(current_node)
-            if current_node not in (start_node, end_node):
-                animation_frames.append(("closed", current_node))
+            closed_set.add(current)
+            if current not in (start, end): animation_frames.append(("closed", current))
 
-            if current_node == end_node:
-                final_path = []
-                node_cursor = end_node
-                while node_cursor:
-                    final_path.append(node_cursor)
-                    node_cursor = came_from[node_cursor]
+            if current == end:
+                path = []
+                cursor = end
+                while cursor:
+                    path.append(cursor)
+                    cursor = came_from[cursor]
                 elapsed_ms = (time.perf_counter() - start_time) * 1000
-                
-                result = {
-                    'path_cost': f'{g_scores[end_node]:.2f}', 
-                    'visited_nodes': len(closed_set),
-                    'execution_time': f'{elapsed_ms:.2f}', 
-                    'operations_count': operations_count, 
-                    'path': final_path
-                }
-                return result, animation_frames
+                return {
+                    'path_cost': f'{g_scores[end]:.2f}', 'visited_nodes': len(closed_set),
+                    'execution_time': f'{elapsed_ms:.2f}', 'operations_count': operations_count, 
+                    'path': path
+                }, animation_frames
 
-            for neighbor_node, movement_cost in self._get_neighbors(current_node):
-                if neighbor_node in closed_set:
-                    continue
-                new_g_score = g_scores[current_node] + movement_cost
-                if neighbor_node not in g_scores or new_g_score < g_scores[neighbor_node]:
-                    if neighbor_node not in g_scores:
+            for neighbor, move_cost in self._get_neighbors(current):
+                if neighbor in closed_set: continue
+                new_g = g_scores[current] + move_cost
+                if neighbor not in g_scores or new_g < g_scores[neighbor]:
+                    if neighbor not in g_scores:
                         operations_count += 1
-                        if neighbor_node != end_node:
-                            animation_frames.append(("open", neighbor_node))
-                    g_scores[neighbor_node] = new_g_score
-                    came_from[neighbor_node] = current_node
+                        if neighbor != end: animation_frames.append(("open", neighbor))
+                    g_scores[neighbor] = new_g
+                    came_from[neighbor] = current
                     tie_break_counter += 1
-                    priority = new_g_score + self._calculate_heuristic(neighbor_node, end_node, heuristic_name)
-                    heapq.heappush(open_set, (priority, tie_break_counter, neighbor_node))
+                    priority = new_g + self._calculate_heuristic(neighbor, end, heuristic_name)
+                    heapq.heappush(open_set, (priority, tie_break_counter, neighbor))
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000
-        result = {
-            'path_cost': '-', 
-            'visited_nodes': len(closed_set),
-            'execution_time': f'{elapsed_ms:.2f}', 
-            'operations_count': operations_count, 
+        return {
+            'path_cost': '-', 'visited_nodes': len(closed_set),
+            'execution_time': f'{elapsed_ms:.2f}', 'operations_count': operations_count, 
             'path': None
-        }
-        return result, animation_frames
+        }, animation_frames
 
     def _refresh_stats(self):
         res = self.algorithm_result

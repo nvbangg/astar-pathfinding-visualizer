@@ -45,7 +45,7 @@
       [1, 0, 1, 1, 0],
       [0, 0, 0, 0, 0]
     ],
-    "start": [3, 0],
+    "start": [0, 3],
     "end": [3, 3],
     "expected_costs": {
       "no_diagonal": 9.0,

@@ -63,12 +63,12 @@ def main():
                 app.allow_diagonal.set(flags['allow_diag'])
                 app.dont_cross_corners.set(flags['dont_cross'])
                 app.diagonal_cost_one.set(flags['diag_cost1'])
-                app.heuristic_combo.set(heuristic)
+                app.combobox_heuristic.set(heuristic)
                 
-                result = app._run_astar_algorithm(heuristic_name=heuristic)
+                result, _ = app._run_astar_algorithm(heuristic_name=heuristic)
                 app.destroy()
 
-                actual = to_float(result.get('cost')) if result else None
+                actual = to_float(result.get('path_cost')) if result else None
                 if actual is None:
                     actual = math.inf
                 
