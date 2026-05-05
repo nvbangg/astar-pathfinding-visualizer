@@ -252,7 +252,9 @@ class App(tk.Tk):
             self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
 
     def _clear_search_path(self):
-        self.is_running = self.is_visualized = False
+        self.is_running = self.is_paused = self.is_visualized = False
+        self.is_step_mode = self.has_step_event = False
+        self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
         self.animation_frames = []
         rows, cols = len(self.grid_data), len(self.grid_data[0])
         for y in range(rows):
