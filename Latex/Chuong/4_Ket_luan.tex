@@ -1,60 +1,19 @@
 \documentclass[../BTL.tex]{subfiles}
 \begin{document}
-
 \section{Kết luận}
-\label{section:4.1}
+Sinh viên so sánh kết quả nghiên cứu hoặc sản phẩm của mình với các nghiên cứu hoặc sản phẩm tương tự.
 
-Bài tập lớn này đã hoàn thành mục tiêu xây dựng một hệ thống trực quan hóa thuật toán tìm đường A* trên lưới hai chiều, cho phép so sánh hiệu năng giữa năm hàm heuristic và bốn cấu hình di chuyển khác nhau. Hệ thống được triển khai hoàn chỉnh bằng ngôn ngữ Python với thư viện Tkinter, cung cấp giao diện đồ họa trực quan hỗ trợ thao tác kéo thả điểm đầu/cuối, vẽ/xóa tường, điều chỉnh tốc độ mô phỏng, và lưu/tải bản đồ. Toàn bộ mã nguồn bao gồm 450 dòng code được tổ chức, đảm bảo tính mở rộng và khả năng tái sử dụng cho các nghiên cứu tiếp theo.
+Sinh viên cần trình bày tất cả những nội dung đóng góp mà mình thấy tâm đắc nhất trong suốt quá trình làm BTL. Đó có thể là một loạt các vấn đề khó khăn mà sinh viên đã từng bước giải quyết được, là giải thuật cho một bài toán cụ thể, là giải pháp tổng quát cho một lớp bài toán, hoặc là mô hình/kiến trúc hữu hiệu nào đó được sinh viên thiết kế.
 
-Từ kết quả thực nghiệm trên bốn kịch bản kiểm thử, ba kết luận chính được rút ra. Thứ nhất, A* với heuristic Euclidean cho tốc độ hội tụ nhanh nhất khi di chuyển được phép theo đường chéo, đạt thời gian xử lý 0.93ms trên lưới 20×20 rỗng. Thứ hai, heuristic Manhattan tuy có thời gian tính toán thấp nhưng không đảm bảo tối ưu đường đi trong không gian 8 hướng, dẫn đến chênh lệch chi phí lên đến 9.5\% so với mức tối ưu lý thuyết. Thứ ba, cơ chế Don't Cross Corners làm tăng chi phí đường đi trung bình 8.7\% nhưng phản ánh chính xác ràng buộc vật lý của robot di động khi không thể đi xuyên qua góc tường.
+Chương này \textbf{là cơ sở quan trọng} để các thầy cô đánh giá sinh viên. Vì vậy, sinh viên cần phát huy tính sáng tạo, khả năng phân tích, phản biện, lập luận, tổng quát hóa vấn đề và tập trung viết cho thật tốt.
+Mỗi giải pháp hoặc đóng góp của sinh viên cần được trình bày trong một mục độc lập bao gồm ba mục con: (i) dẫn dắt/giới thiệu về bài toán/vấn đề, (ii) giải pháp, và (iii) kết quả đạt được (nếu có).
 
-\section{Đóng góp chính}
-\label{section:4.2}
+Sinh viên lưu ý \textbf{không trình bày lặp lại nội dung}. Những nội dung đã trình bày chi tiết trong các chương trước không được trình bày lại trong chương này. Vì vậy, với nội dung hay, mang tính đóng góp/giải pháp, sinh viên chỉ nên tóm lược/mô tả sơ bộ trong các chương trước, đồng thời tạo tham chiếu chéo tới đề mục tương ứng trong Chương 4 này. Chi tiết thông tin về đóng góp/giải pháp được trình bày trong mục đó.
 
-\subsection{Kiến trúc generator cho tìm kiếm thời gian thực}
-\label{section:4.2.1}
-
-Bài toán trực quan hóa thuật toán tìm kiếm thời gian thực đặt ra yêu cầu về khả năng tạm dừng và tiếp tục quá trình tính toán giữa chừng. Các hệ thống hiện có (PathFinding.js, EasyAStar) thường xử lý toàn bộ tìm kiếm trong một lần gọi hàm rồi mới hiển thị kết quả, không cho phép người dùng quan sát từng bước mở rộng đỉnh. Giải pháp của nhóm là tổ chức thuật toán A* dưới dạng hàm generator, trong đó mỗi lần mở rộng một đỉnh được đóng gói thành sự kiện và trả về qua từ khóa yield. Hàm tìm kiếm chính sinh ra ba loại sự kiện: ('open', pos) khi một đỉnh được thêm vào hàng đợi ưu tiên, ('closed', pos) khi một đỉnh được lấy ra để mở rộng, và ('path', path) khi tìm thấy đường đi. Lớp App quản lý một hàng đợi các sự kiện này và phát lại chúng với tốc độ điều khiển bằng thanh trượt Speed. Kết quả đạt được là một cơ chế trực quan hóa cho phép người dùng tạm dừng, tiếp tục, chạy từng bước, và điều chỉnh tốc độ mô phỏng từ 1 đến 100 bước trên giây. Hệ thống có thể xử lý lưới kích thước 45×25 với 1125 ô, thời gian phát lại toàn bộ quá trình tìm kiếm khoảng 2.3 giây ở tốc độ trung bình.
-
-\subsection{Khung so sánh đa heuristic tích hợp}
-\label{section:4.2.2}
-
-Việc đánh giá hiệu năng của các hàm heuristic khác nhau thường đòi hỏi lập trình viên phải chạy riêng rẽ từng cấu hình, ghi log kết quả, rồi tổng hợp thủ công. Quy trình này tốn thời gian, dễ sai sót, và khó tái tạo khi thay đổi bản đồ. Giải pháp của nhóm là xây dựng chức năng Compare All, thực hiện lần lượt năm heuristic (Euclidean, Manhattan, Octile, Chebyshev, Dijkstra) trên cùng một bản đồ với cùng bộ tham số di chuyển. Mỗi lần chạy thu thập bốn chỉ số: Path Cost, Visited Nodes, Execute Time (ms), Operations. Kết quả được hiển thị trong cửa sổ phụ dạng bảng, cho phép so sánh trực quan giữa các heuristic. Ngoài ra, bộ test\_runner.py tự động kiểm thử trên bốn kịch bản với năm tổ hợp cấu hình di chuyển, đạt tỷ lệ thành công 100\% trên tổng số 100 lần chạy kiểm thử.
-
-\subsection{Cơ chế kiểm soát ràng buộc di chuyển linh hoạt}
-\label{section:4.2.3}
-
-Một thách thức quan trọng trong mô phỏng robot di động là thể hiện chính xác các ràng buộc vật lý của không gian chuyển động. Trường hợp đặc biệt là vấn đề "cắt góc" (cutting corners), khi robot có thể đi xuyên qua góc của vật cản nếu chỉ kiểm tra ô đích mà không kiểm tra các ô lân cận. Giải pháp của nhóm triển khai ba cấp độ kiểm soát di chuyển. Cấp độ thứ nhất: Allow Diagonal (bật/tắt di chuyển chéo). Cấp độ thứ hai: Don't Cross Corners (kiểm tra hai ô kề cạnh trước khi cho phép đi chéo). Cấp độ thứ ba: Diagonal Cost = 1 (gán chi phí di chuyển chéo bằng với di chuyển thẳng). Ba tham số này được truyền vào phương thức và ảnh hưởng trực tiếp đến danh sách lân cận hợp lệ của mỗi đỉnh. Kết quả thực nghiệm cho thấy khi bật Don't Cross Corners, đường đi không còn hiện tượng "xuyên góc" nhưng chi phí tăng trung bình 8.7\%. Khi bật Diagonal Cost = 1, đường đi ngắn nhất đạt được trên lưới 20×20 chỉ còn 15 bước thay vì 21.21 bước so với chi phí Euclidean chuẩn. Sự khác biệt này minh chứng rằng việc lựa chọn mô hình chi phí ảnh hưởng đáng kể đến đường đi tìm được.
-
-\section{So sánh với các công trình liên quan}
-\label{section:4.3}
-
-Hệ thống của nhóm có hai điểm vượt trội so với các công cụ hiện có. Thứ nhất, hỗ trợ đầy đủ năm hàm heuristic bao gồm cả trường hợp đặc biệt Dijkstra (h=0), trong khi các công cụ khác chỉ hỗ trợ tối đa bốn loại. Thứ hai, tích hợp chức năng Compare All cho phép so sánh tự động toàn bộ heuristic trên cùng một bản đồ, tính năng không có trong bất kỳ công cụ nào được khảo sát.
-
-\section{Bài học kinh nghiệm}
-\label{section:4.4}
-
-Quá trình thực hiện bài tập lớn mang lại ba bài học có giá trị. Thứ nhất, về mặt kỹ thuật, việc sử dụng generator thay vì callback giúp đơn giản hóa luồng điều khiển trong các ứng dụng có yêu cầu tạm dừng/tiếp tục. Mô hình này có thể áp dụng cho các thuật toán tìm kiếm khác như BFS, DFS, IDA*. Thứ hai, về mặt quản lý dự án, việc xây dựng bộ kiểm thử tự động (test\_runner.py) ngay từ đầu giúp phát hiện lỗi logic sớm, đặc biệt là các lỗi liên quan đến chi phí đường chéo và kiểm soát cắt góc. Bốn kịch bản kiểm thử (2×2, 5×6, U-Shape, 20×20) bao phủ hầu hết các trường hợp biên của bài toán tìm đường. Thứ ba, về mặt lý thuyết, thực nghiệm đã chỉ ra rằng không có heuristic nào là tối ưu cho mọi loại bản đồ. Heuristic Euclidean chiếm ưu thế trên bản đồ thưa thớt. Heuristic Manhattan phù hợp với môi trường 4 hướng hoặc bản đồ có chướng ngại vật dạng hành lang. Heuristic Octile là lựa chọn cân bằng nhất khi không biết trước đặc tính của bản đồ.
+Sinh viên phân tích trong suốt quá trình thực hiện BTL, mình đã làm được gì, chưa làm được gì, các đóng góp nổi bật là gì, và tổng hợp những bài học kinh nghiệm rút ra nếu có.
 
 \section{Hướng phát triển}
-\label{section:4.5}
+Trong phần này, sinh viên trình bày định hướng công việc trong tương lai để hoàn thiện sản phẩm hoặc nghiên cứu của mình.
 
-\subsection{Các công việc cần thiết để hoàn thiện sản phẩm hiện tại}
-\label{section:4.5.1}
-
-Ba công việc ưu tiên nhằm nâng cao chất lượng sản phẩm. Thứ nhất, tích hợp tìm kiếm song hướng (bidirectional A*) vào giao diện chính, với điều kiện dừng khi một đỉnh được mở từ cả hai phía. Dự kiến cải thiện thời gian tìm kiếm trung bình 40\% trên bản đồ kích thước 100×100. Thứ hai, bổ sung chức năng xuất bản đồ ra file hình ảnh (PNG) và nhập bản đồ từ hình ảnh đã được số hóa, sử dụng thư viện Pillow để chuyển đổi ma trận pixel thành ma trận walkable. Thứ ba, tối ưu hiệu năng bằng cách lưu trữ danh sách neighbor tĩnh cho mỗi ô thay vì tính toán lại mỗi lần mở rộng đỉnh, dự kiến giảm 30\% thời gian xử lý.
-
-\subsection{Hướng phát triển mở rộng: Multi-Heuristic A*}
-\label{section:4.5.2}
-
-Hướng phát triển đầy hứa hẹn nhất là tích hợp Multi-Heuristic A* (MHA*) do Aine, Swaminathan và Kumar đề xuất trên tạp chí Artificial Intelligence năm 2016. Thay vì sử dụng một heuristic cố định, MHA* duy trì một tập hợp nhiều heuristic (ví dụ: Manhattan, Euclidean, Octile) và chọn heuristic có giá trị ước lượng lớn nhất tại mỗi bước. Phương pháp này đảm bảo tính tối ưu của đường đi trong khi cải thiện tốc độ hội tụ lên đến 50\% so với A* truyền thống trên bản đồ phức tạp. Giải pháp kỹ thuật cho hướng phát triển này bao gồm ba bước. Bước một, mở rộng lớp Heuristics thành danh sách các hàm heuristic thay vì một hàm duy nhất. Bước hai, sửa đổi hàm tìm kiếm chính để tại mỗi bước tính \(h_{\max} = \max(h_1(n), h_2(n), h_3(n))\) thay vì \(h(n)\) cố định. Bước ba, đảm bảo tất cả heuristic trong tập hợp đều là chấp nhận được (admissible) để duy trì tính tối ưu toàn cục. Kết quả kỳ vọng khi triển khai MHA* là giảm số lượng visited nodes trung bình từ 15\% đến 40\% so với từng heuristic riêng lẻ, đặc biệt trên các bản đồ có cấu trúc chướng ngại vật hình bẫy (như kịch bản U-Shape). Hướng phát triển này mở ra khả năng ứng dụng hệ thống vào các bài toán hoạch định đường đi trong môi trường đô thị hoặc kho bãi tự động, nơi yêu cầu cả tốc độ lẫn độ chính xác.
-
-\subsection*{Tổng quan}
-
-Chương 3 đã trình bày chi tiết quá trình thực nghiệm với bốn kịch bản kiểm thử và năm cấu hình heuristic, cùng kết quả so sánh định lượng giữa các biến thể thuật toán. Chương 4 này có nhiệm vụ tổng kết toàn bộ các đóng góp của bài tập lớn, phân tích những hạn chế còn tồn tại, đề xuất hướng phát triển trong tương lai, đồng thời đối chiếu sản phẩm với các nghiên cứu liên quan. Nội dung chính của chương bao gồm: phần 4.1 trình bày các kết luận về mặt lý thuyết và kết quả thực nghiệm; phần 4.2 tổng hợp những đóng góp cụ thể của nhóm (kiến trúc generator, khung so sánh đa heuristic, cơ chế kiểm soát ràng buộc di chuyển); phần 4.3 so sánh sản phẩm với các hệ thống tương tự; phần 4.4 phân tích những bài học kinh nghiệm; phần 4.5 đề xuất các hướng phát triển trong tương lai, đặc biệt là tích hợp Multi-Heuristic A*.
-
-\subsection*{Kết chương}
-
-Chương này đã tổng kết toàn bộ quá trình thực hiện bài tập lớn, từ các kết luận lý thuyết đến những đóng góp cụ thể về mặt kỹ thuật và phương pháp luận. Ba đóng góp chính bao gồm kiến trúc generator cho trực quan hóa thời gian thực, khung so sánh đa heuristic tích hợp, và cơ chế kiểm soát ràng buộc di chuyển linh hoạt. Hệ thống được đối chiếu với các công cụ hiện có, chỉ ra hai điểm vượt trội (năm hàm heuristic và chức năng Compare All). Ba bài học kinh nghiệm về kỹ thuật, quản lý dự án và lý thuyết được rút ra. Ba hướng phát triển được đề xuất, trong đó Multi-Heuristic A* (MHA*) là hướng đầy hứa hẹn nhất với kỳ vọng cải thiện hiệu năng từ 15\% đến 40\% trên bản đồ phức tạp. Báo cáo kết thúc tại đây, mở ra cơ hội cho các nghiên cứu tiếp theo về tìm đường thông minh trong môi trường động và đa tác tử.
-
+Trước tiên, sinh viên trình bày các công việc cần thiết để hoàn thiện các chức năng/nhiệm vụ đã làm. Sau đó sinh viên phân tích các hướng đi mới cho phép cải thiện và nâng cấp các chức năng/nhiệm vụ đã làm.
 \end{document}

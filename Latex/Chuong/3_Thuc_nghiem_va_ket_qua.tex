@@ -11,6 +11,7 @@
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{anyfontsize}
+\usepackage{indentfirst}
 
 \AtBeginDocument{\fontsize{13pt}{15pt}\selectfont}
 \geometry{left=3cm,right=2cm,top=2cm,bottom=2cm}
@@ -35,62 +36,44 @@
 \begin{document}
 
 \section*{Tổng quan chương}
+
 Chương 3 tập trung vào quá trình hiện thực hóa các cơ sở lý thuyết đã trình bày ở các chương trước thành một hệ thống mô phỏng hoàn chỉnh, đồng thời tiến hành các bài kiểm thử thực nghiệm để đo lường và đánh giá hiệu năng của thuật toán tìm đường A*. Mục đích cốt lõi của chương là cung cấp một cái nhìn thực tế và khách quan về cách thuật toán hoạt động, cũng như phân tích sự đánh đổi giữa thời gian xử lý và không gian lưu trữ trong các điều kiện môi trường khác nhau.
 
 \section{Mục tiêu thực nghiệm}
 
 \subsection{Mục tiêu tổng quát}
-Quá trình thực nghiệm được tiến hành nhằm xác thực tính đúng đắn và hiệu năng của thuật toán A* trong bài toán tìm đường trên không gian không gian rời rạc (lưới 2D). Hai mục tiêu cốt lõi bao gồm:
-\begin{itemize}
-    \item \textbf{Kiểm chứng thuật toán:} Chứng minh thuật toán A* luôn đảm bảo tìm được đường đi có tổng chi phí thấp nhất (tối ưu toàn cục) từ điểm xuất phát đến đích trong môi trường tồn tại vật cản tĩnh, miễn là tồn tại đường đi và hàm Heuristic là Chấp nhận được.
-    \item \textbf{Đánh giá hệ thống mô phỏng:}  Xác nhận tính ổn định, độ trực quan và khả năng phản hồi thời gian thực của phần mềm mô phỏng đã xây dựng khi xử lý các kịch bản môi trường có độ phức tạp khác nhau.
-\end{itemize}
+
+Quá trình thực nghiệm được tiến hành nhằm xác thực tính đúng đắn và hiệu năng của thuật toán A* trong bài toán tìm đường trên không gian rời rạc (lưới 2D). Hai mục tiêu cốt lõi của quá trình này bao gồm \textbf{kiểm chứng thuật toán} và \textbf{đánh giá hệ thống mô phỏng}. Cụ thể, việc kiểm chứng thuật toán nhằm chứng minh rằng thuật toán A* luôn đảm bảo tìm được đường đi có tổng chi phí thấp nhất (tối ưu toàn cục) từ điểm xuất phát đến đích trong môi trường tồn tại vật cản tĩnh, miễn là tồn tại đường đi và hàm Heuristic là chấp nhận được. Đồng thời, việc đánh giá hệ thống mô phỏng nhằm xác nhận tính ổn định, độ trực quan và khả năng phản hồi thời gian thực của phần mềm mô phỏng đã xây dựng khi xử lý các kịch bản môi trường có độ phức tạp khác nhau.
 
 \subsection{Mục tiêu cụ thể}
-Để làm rõ các đặc tính toán học và tin học của thuật toán, thực nghiệm đi sâu vào các khía cạnh chi tiết sau:
 
-\begin{itemize}
-    \item So sánh hiệu quả của các hàm ước lượng Heuristic: Đánh giá tốc độ hội tụ và số lượng không gian trạng thái cần duyệt thông qua 5 phương pháp:
-    \begin{itemize}
-        \item Euclidean: Phù hợp khi cho phép di chuyển mọi hướng. 
-        \item Manhattan: Tối ưu cho di chuyển 4 hướng (chữ thập). 
-        \item Chebyshev: Phù hợp khi đi chéo có cùng chi phí với đi thẳng.
-        \item Octile: Tối ưu cho di chuyển 8 hướng với chi phí chéo là 2. 
-        \item Dijkstra (Trường hợp đặc biệt khi h(n) = 0): So sánh thuật toán duyệt mù với thuật toán có thông tin định hướng (A*).
-    \end{itemize}
-    \item Đánh giá ảnh hưởng của không gian hành động: Quan sát sự biến đổi của quỹ đạo đường đi dưới các ràng buộc vật lý:
-    \begin{itemize}
-        \item Chỉ di chuyển 4 hướng (Không đi chéo).
-        \item Di chuyển 8 hướng (Đi chéo thường, chi phí chéo = 2).
-        \item Đi chéo nhưng không cho phép "cắt góc" để tránh việc vật thể đi xuyên qua mép của vật cản.
-        \item Đi chéo với chi phí quy đổi bằng đi thẳng (Cost = 1).
-    \end{itemize}
-\end{itemize}
+Để làm rõ các đặc tính toán học và tin học của thuật toán, quá trình thực nghiệm tập trung phân tích các khía cạnh chi tiết sau. 
+
+Trước hết, thực nghiệm tiến hành so sánh hiệu quả của các hàm ước lượng Heuristic bằng cách đánh giá tốc độ hội tụ và số lượng không gian trạng thái cần duyệt thông qua năm phương pháp cụ thể. Trong đó, hàm Euclidean phù hợp khi hệ thống cho phép di chuyển theo mọi hướng. Hàm Manhattan được xem là tối ưu trong trường hợp chỉ cho phép di chuyển theo bốn hướng (dạng chữ thập). Hàm Chebyshev phù hợp khi chi phí di chuyển theo đường chéo bằng với chi phí di chuyển theo phương ngang hoặc dọc. Hàm Octile được thiết kế tối ưu cho không gian di chuyển tám hướng, trong đó chi phí đường chéo được đặt bằng 2. Cuối cùng, thuật toán Dijkstra, tương ứng với trường hợp đặc biệt khi $h(n) = 0$, được sử dụng như một mốc tham chiếu nhằm so sánh giữa phương pháp tìm kiếm không có định hướng và thuật toán A* có sử dụng thông tin heuristic.
+
+Bên cạnh đó, thực nghiệm cũng tiến hành đánh giá ảnh hưởng của không gian hành động bằng cách quan sát sự thay đổi của quỹ đạo đường đi dưới các ràng buộc vật lý khác nhau. Cụ thể, hệ thống được khảo sát trong trường hợp chỉ cho phép di chuyển theo bốn hướng và không cho phép đi chéo. Tiếp theo, hệ thống được mở rộng để cho phép di chuyển theo tám hướng với chi phí đường chéo thông thường bằng 2. Ngoài ra, một cấu hình khác được xem xét là cho phép di chuyển chéo nhưng không cho phép “cắt góc”, nhằm tránh hiện tượng vật thể đi xuyên qua mép của vật cản. Cuối cùng, thực nghiệm cũng đánh giá trường hợp cho phép di chuyển chéo với chi phí được quy đổi bằng chi phí đi thẳng (Cost = 1).
 
 \section{Triển khai hệ thống}
 
 \subsection{Thiết kế chức năng}
-Hệ thống được xây dựng với kiến trúc hướng sự kiện, tập trung vào trải nghiệm tương tác của người dùng:
 
-\begin{itemize}
-    \item Quản lý môi trường: Khởi tạo ma trận lưới 2D. Cho phép người dùng tùy chỉnh kích thước lưới động.
-    \item Tương tác bản đồ: Tích hợp tính năng kéo-thả cho các điểm Start và End. Hỗ trợ nhấp/kéo chuột trái để vẽ tường và nhấp/kéo vào tường để xóa.
-    \item Thực thi thuật toán: Kích hoạt bộ giải thuật A* theo thời gian thực hoặc từng bước để quan sát sự lan truyền của tập mở và tập đóng.
-    \item Tùy chỉnh tham số: Cung cấp menu lựa chọn linh hoạt các hàm heuristic và luật di chuyển trước mỗi lần thực thi.
-\end{itemize}
+Hệ thống được xây dựng dựa trên kiến trúc hướng sự kiện và tập trung vào việc nâng cao trải nghiệm tương tác của người dùng. 
+
+Trước hết, hệ thống cung cấp chức năng quản lý môi trường thông qua việc khởi tạo ma trận lưới hai chiều, đồng thời cho phép người dùng tùy chỉnh kích thước lưới một cách linh hoạt. Bên cạnh đó, hệ thống hỗ trợ tương tác bản đồ bằng cách tích hợp tính năng kéo - thả để xác định các điểm Start và End, cũng như cho phép người dùng sử dụng thao tác nhấp hoặc kéo chuột trái để vẽ tường và thao tác tương tự để xóa tường. 
+
+Ngoài ra, hệ thống cho phép thực thi thuật toán A* theo hai chế độ, bao gồm chế độ thời gian thực và chế độ từng bước, nhằm giúp người dùng quan sát rõ quá trình lan truyền của tập mở và tập đóng. Cuối cùng, hệ thống còn cung cấp khả năng tùy chỉnh tham số thông qua menu lựa chọn, cho phép người dùng linh hoạt thay đổi các hàm heuristic và luật di chuyển trước mỗi lần thực thi.
 
 \subsection{Giao diện người dùng}
-Giao diện được phân bổ thành 3 phân vùng chức năng rõ rệt, đảm bảo tiêu chuẩn thiết kế UI/UX cho phần mềm học thuật:
+Giao diện được phân bổ thành ba phân vùng chức năng rõ rệt nhằm đảm bảo tiêu chuẩn thiết kế UI/UX cho phần mềm học thuật. Trước hết, khu vực lưới đóng vai trò là không gian đồ họa chính, trong đó các node được mã hóa bằng màu sắc để biểu diễn trạng thái, bao gồm trắng (chưa duyệt), xám (tường), xanh lá nhạt (Open list - đang chờ duyệt), xanh lam (Closed list - đã duyệt) và vàng (đường đi tối ưu).
+
+Bên cạnh đó, bảng điều khiển được bố trí ở góc trên bên phải của giao diện, bao gồm các thành phần như ComboBox để lựa chọn hàm Heuristic, các nút lệnh điều khiển và thanh trượt (Slider) nhằm điều chỉnh độ trễ của mô phỏng.
+
+Ngoài ra, khu vực thống kê được sử dụng để hiển thị các chỉ số định lượng sau mỗi lần chạy, bao gồm:
 \begin{itemize}
-    \item Khu vực lưới: Là không gian đồ họa chính. Các node được mã hóa bằng màu sắc: Trắng (chưa duyệt), Xám (tường), Xanh lá nhạt (Open list - đang chờ duyệt), Xanh lam (Closed list - đã duyệt), và Vàng (Đường đi tối ưu).
-    \item Bảng điều khiển: Đặt góc trên bên phải , chứa các ComboBox (chọn Heuristic), các nút lệnh và thanh trượt Slider điều chỉnh độ trễ mô phỏng.
-    \item Khu vực thống kê: Hiển thị các chỉ số định lượng sau mỗi lần chạy:
-    \begin{itemize}
-        \item Path Cost: Tổng chi phí đường đi.
-        \item Visited Nodes: Số lượng node đã được lấy ra khỏi tập mở để xét.
-        \item Execution Time: Thời gian CPU thực thi thuật toán (tính bằng mili-giây).
-        \item Operations: Số bước lặp của vòng lặp thuật toán chính.
-    \end{itemize}
+    \item Path Cost: Tổng chi phí đường đi.
+    \item Visited Nodes: Số lượng node đã được lấy ra khỏi tập mở để xét.
+    \item Execution Time: Thời gian CPU thực thi thuật toán (tính bằng mili-giây).
+    \item Operations: Số bước lặp của vòng lặp thuật toán chính.
 \end{itemize}
 
 \begin{figure}[H]
@@ -105,16 +88,12 @@ Giao diện được phân bổ thành 3 phân vùng chức năng rõ rệt, đ�
 
  
 \subsection{Công cụ và thư viện}
-\textbf{Ngôn ngữ lập trình:} Python. Được chọn nhờ hiệu suất xử lý tốt và hệ sinh thái thư viện phong phú cho việc xử lý cấu trúc dữ liệu.
 
-\textbf{Thư viện cốt lõi:}
-\begin{itemize}
-    \item \textbf{Tkinter:} Thư viện GUI tiêu chuẩn của Python, được sử dụng để vẽ Canvas đồ họa do ưu điểm nhẹ, không yêu cầu cài đặt phần mềm bên thứ ba và đáp ứng tốt việc render lưới 2D theo thời gian thực.
-    \item \textbf{heapq}: Thư viện cung cấp cấu trúc dữ liệu Hàng đợi ưu tiên (Min-Heap). Đây là yếu tố quyết định giúp tối ưu hóa thao tác tìm node có giá trị f(n) = g(n) + h(n) nhỏ nhất với độ phức tạp thời gian chỉ O(log n), thay vì O(n) như mảng thông thường.
-\end{itemize}
-\begin{itemize}
-    \item \textbf{Môi trường phát triển:} Môi trường lập trình Visual Studio Code trên nền tảng hệ điều hành Windows.
-\end{itemize}
+Ngôn ngữ lập trình được sử dụng là Python, được lựa chọn nhờ hiệu suất xử lý tốt và hệ sinh thái thư viện phong phú, đặc biệt phù hợp cho việc xử lý các cấu trúc dữ liệu.
+
+Trong quá trình phát triển, hệ thống sử dụng một số thư viện cốt lõi. Cụ thể, Tkinter là thư viện GUI tiêu chuẩn của Python, được sử dụng để vẽ Canvas đồ họa nhờ ưu điểm nhẹ, không yêu cầu cài đặt phần mềm bên thứ ba và đáp ứng tốt việc hiển thị lưới 2D theo thời gian thực. Bên cạnh đó, thư viện heapq cung cấp cấu trúc dữ liệu hàng đợi ưu tiên (Min-Heap), đóng vai trò quan trọng trong việc tối ưu hóa thao tác tìm node có giá trị $f(n) = g(n) + h(n)$ nhỏ nhất với độ phức tạp thời gian $O(\log n)$, thay vì $O(n)$ như khi sử dụng mảng thông thường. 
+
+Ngoài ra, môi trường phát triển được sử dụng là Visual Studio Code trên nền tảng hệ điều hành Windows.
 
 \section{Dữ liệu và bộ test}
 
@@ -139,51 +118,35 @@ Giao diện được phân bổ thành 3 phân vùng chức năng rõ rệt, đ�
 
 \subsection{Mục đích bộ test}
 
-Tập hợp các bộ test trên cung cấp cơ sở dữ liệu thực nghiệm nhằm:
+Tập hợp các bộ test trên cung cấp cơ sở dữ liệu thực nghiệm nhằm phục vụ hai mục tiêu chính là nghiệm chứng lý thuyết và đánh giá sự đánh đổi. Cụ thể, việc nghiệm chứng lý thuyết nhằm xác nhận rằng Heuristic luôn có xu hướng tìm ra đường đi tối ưu nếu thỏa mãn điều kiện chấp nhận được.
 
-\begin{itemize}
-    \item Nghiệm chứng lý thuyết: Xác nhận rằng Heuristic luôn có xu hướng tìm ra đường đi tối ưu nếu Heuristic đó thỏa mãn điều kiện Chấp nhận được.
-    \item Đánh giá đánh đổi : Cung cấp các số liệu thực tế về việc đánh đổi giữa Thời gian tính toán và Chi phí không gian lưu trữ khi thay đổi các thông số của thuật toán trong các môi trường khác nhau.
-\end{itemize}
+Đồng thời, quá trình thực nghiệm cũng cung cấp các số liệu thực tế để đánh giá sự đánh đổi giữa thời gian tính toán và chi phí không gian lưu trữ khi thay đổi các thông số của thuật toán trong các môi trường khác nhau.
 
 \section{Phương pháp đánh giá}
 
 \subsection{\textbf{Các tiêu chí đánh giá }}
 
-Mỗi lượt chạy thực nghiệm trên một kịch bản sẽ được đo lường dựa trên 4 bộ chỉ số cốt lõi sau:
+Mỗi lượt chạy thực nghiệm trên một kịch bản được đo lường dựa trên bốn chỉ số cốt lõi, trong đó có thể chia thành hai nhóm chính là tính tối ưu của đường đi và độ phức tạp thực tế.
 
-\begin{itemize}
-    \item Tính tối ưu của đường đi: Tổng chi phí từ điểm Start đến điểm End. Tiêu chí này dùng để xác nhận thuật toán có tìm được đường đi ngắn nhất hay không. Một Heuristic được xem là Chấp nhận được khi đường đi nó tìm ra có Cost bằng với chi phí tối ưu lý thuyết (thường đối chiếu với kết quả của thuật toán Dijkstra).
-    \item Độ phức tạp thực tế:
+\textbf{(i) Tính tối ưu của đường đi:} Chỉ số này được xác định thông qua tổng chi phí từ điểm Start đến điểm End và được sử dụng để kiểm tra xem thuật toán có tìm được đường đi ngắn nhất hay không. Một Heuristic được xem là chấp nhận được khi đường đi mà nó tìm ra có Cost bằng với chi phí tối ưu lý thuyết, thường được đối chiếu với kết quả của thuật toán Dijkstra.
+    
+\textbf{(ii) Độ phức tạp thực tế:} Nhóm chỉ số này phản ánh hiệu suất của thuật toán trong quá trình thực thi, bao gồm:
     \begin{itemize}
-        \item Visited Nodes: Là số lượng node được lấy ra khỏi tập mở để đưa vào tập đóng. Đây là thước đo chuẩn xác nhất về "độ thông minh" hay khả năng định hướng của hàm Heuristic. Heuristic càng tiệm cận chi phí thực tế thì số node phải duyệt càng ít.
-        \item Time: Thời gian CPU (tính bằng ms) cần thiết để hoàn thành việc tìm đường, phản ánh tốc độ hội tụ của thuật toán trong môi trường phần cứng thực tế.
+        \item \textit{Visited Nodes:} Là số lượng node được lấy ra khỏi tập mở để đưa vào tập đóng. Đây là thước đo quan trọng phản ánh khả năng định hướng của hàm Heuristic; Heuristic càng chính xác thì số node cần duyệt càng ít.
+        \item \textit{Time:} Là thời gian CPU (tính bằng mili-giây) cần thiết để hoàn thành quá trình tìm đường, qua đó phản ánh tốc độ hội tụ của thuật toán trong điều kiện phần cứng thực tế.
     \end{itemize}
-\end{itemize}
 
 \subsection{Quy trình tiến hành thu thập dữ liệu}
 
-Để đảm bảo tính công bằng khi so sánh, quy trình thực nghiệm tuân thủ các bước nghiêm ngặt:
+Để đảm bảo tính công bằng khi so sánh, quy trình thực nghiệm được thiết kế và thực hiện theo các bước nghiêm ngặt.
 
-\begin{itemize}
-    \item Cố định môi trường: Đối với mỗi kịch bản, bản đồ lưới được khởi tạo và giữ cố định tuyệt đối.
-    \item Khảo sát chéo: Lần lượt áp dụng tất cả các hàm Heuristic (Euclidean, Manhattan, Octile, Chebyshev, Dijkstra) kết hợp với các Chế độ di chuyển (Có/Không cho phép đi chéo) trên cùng một bản đồ.
-\end{itemize}
+Trước hết, môi trường được cố định tuyệt đối đối với mỗi kịch bản, trong đó bản đồ lưới chỉ được khởi tạo một lần và giữ nguyên trong suốt quá trình thử nghiệm. Tiếp theo, thực nghiệm tiến hành khảo sát chéo bằng cách lần lượt áp dụng tất cả các hàm Heuristic, bao gồm Euclidean, Manhattan, Octile, Chebyshev và Dijkstra, kết hợp với các chế độ di chuyển như cho phép hoặc không cho phép đi chéo, trên cùng một bản đồ nhằm đảm bảo tính so sánh khách quan giữa các cấu hình.
 
 \subsection{Phương pháp phân tích và trình bày kết quả}
 
-Sau khi thu thập đầy đủ số liệu, kết quả được phân tích qua hai phương pháp:
-\begin{itemize}
-    
+Sau khi thu thập đầy đủ số liệu, kết quả được phân tích thông qua hai phương pháp chính là phân tích định lượng và phân tích định tính. 
 
-\item Phân tích định lượng:
-
-Sử dụng bảng so sánh để đối chiếu trực tiếp các chỉ số Path Cost, Visited Nodes, Execute Time và Operations giữa các hàm Heuristic.
-
-\item Phân tích định tính (Trực quan hóa không gian tìm kiếm):
-
-Sử dụng hình ảnh chụp màn hình từ hệ thống mô phỏng để minh họa "vùng loang".
-\end{itemize}
+Cụ thể, phân tích định lượng được thực hiện bằng cách sử dụng các bảng so sánh để đối chiếu trực tiếp các chỉ số như Path Cost, Visited Nodes, Execute Time và Operations giữa các hàm Heuristic. Bên cạnh đó, phân tích định tính được triển khai dưới dạng trực quan hóa không gian tìm kiếm, trong đó các hình ảnh chụp màn hình từ hệ thống mô phỏng được sử dụng để minh họa quá trình lan truyền của thuật toán, hay còn gọi là “vùng loang”.
  
 \section{Kết quả thực nghiệm}
 
@@ -191,13 +154,16 @@ Sử dụng hình ảnh chụp màn hình từ hệ thống mô phỏng để mi
 
 Hệ thống đã thực hiện kiểm thử trên bộ dữ liệu test\_cases.json với 4 Scenario, mỗi scenario có 5 tổ hợp cấu hình
 
-\begin{itemize}
-    \item Tổ hợp 1: Allow Diagonal = Tắt (Các option con không quan trọng).
-    \item Tổ hợp 2: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Tắt.
-    \item Tổ hợp 3: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Tắt.
-    \item Tổ hợp 4: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Bật.
-    \item Tổ hợp 5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
-\end{itemize}
+Tổ hợp 1: Allow Diagonal = Tắt (Các option con không quan trọng).
+
+Tổ hợp 2: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Tắt.
+
+Tổ hợp 3: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Tắt.
+
+Tổ hợp 4: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Bật.
+
+Tổ hợp 5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
+
 Kết quả được ghi nhận như sau:
 
 \begin{figure}[H]
@@ -277,51 +243,35 @@ T5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
 \section{Phân tích và kết luận}
 \subsection{Giải thích các kết quả}
 
-Dựa trên dữ liệu thực nghiệm từ phần kết quả so sánh Heuristic, chúng ta có thể thấy sự biến thiên rõ rệt của các chỉ số tùy thuộc vào hàm Heuristic và chế độ di chuyển được thiết lập.
-\begin{itemize}
-\item Về chi phí đường đi (Path Cost): 
+Dựa trên dữ liệu thực nghiệm từ phần kết quả so sánh Heuristic, có thể nhận thấy sự biến thiên rõ rệt của các chỉ số tùy thuộc vào hàm Heuristic và chế độ di chuyển được thiết lập.
 
 \begin{itemize}
-    \item Khi tắt di chuyển chéo (T1): Tất cả các Heuristic đều cho cùng một kết quả chi phí là 60.00, chứng tỏ khi di chuyển 4 hướng, các hàm heuristic đều tìm được đường đi ngắn nhất
-    \item Khi bật di chuyển chéo (T2, T3, T4, T5): Chi phí giảm đáng kể so với T1. Trong điều kiện tiêu chuẩn (T2), chi phí là 48.28. Khi thiết lập Diagonal Cost = 1 (T4), chi phí đạt mức tối thiểu là 40.00.
-    \item Ảnh hưởng của Don't Cross Corners: Ở chế độ này (T3, T5), chi phí tăng nhẹ so với khi không chặn góc (từ 48.28 lên 50.63 ở T3; từ 40.00 lên 43.00 ở T5). Điều này do thuật toán phải đi vòng qua các góc vật cản thay vì đi chéo xuyên qua điểm tiếp xúc giữa hai vật cản.
-    \item Tính tối ưu của Manhattan: Trong các chế độ di chuyển 8 hướng có trọng số (T2, T3, T5), hàm Manhattan thường cho kết quả Path Cost cao hơn (ví dụ 49.94 so với 48.28 ở T2). Lý do là Manhattan không tính toán chính xác chi phí đường chéo, dẫn đến việc đánh giá sai độ ưu tiên và tìm ra đường đi chưa tối ưu tuyệt đối trong không gian 8 hướng.
-\end{itemize}
-\item Về hiệu suất tìm kiếm (Visited Nodes \& Execute Time/ Operations): 
+    \item \textbf{Về chi phí đường đi (Path Cost):} 
+    
+    Khi tắt di chuyển chéo (T1), tất cả các hàm Heuristic đều cho cùng một kết quả chi phí là 60.00, cho thấy trong không gian di chuyển 4 hướng, các heuristic đều đảm bảo tìm được đường đi ngắn nhất. 
+    
+    Khi bật di chuyển chéo (các cấu hình T2, T3, T4, T5), chi phí đường đi giảm đáng kể so với T1; cụ thể trong điều kiện tiêu chuẩn (T2), chi phí đạt 48.28, và khi thiết lập Diagonal Cost = 1 (T4), chi phí giảm xuống mức tối thiểu là 40.00. 
+    
+    Đối với chế độ Don’t Cross Corners (T3, T5), chi phí tăng nhẹ so với khi không chặn góc (từ 48.28 lên 50.63 ở T3 và từ 40.00 lên 43.00 ở T5), do thuật toán phải đi vòng qua các góc vật cản thay vì đi chéo trực tiếp. Ngoài ra, trong các chế độ di chuyển 8 hướng có trọng số (T2, T3, T5), hàm Manhattan thường cho kết quả Path Cost cao hơn (ví dụ 49.94 so với 48.28 ở T2) vì không phản ánh chính xác chi phí đường chéo, dẫn đến việc đánh giá sai độ ưu tiên và không đảm bảo tối ưu tuyệt đối.
 
-\begin{itemize}
-    \item Sự vượt trội của Manhattan trong T1: Ở chế độ 4 hướng, Manhattan là hàm hiệu quả nhất với 510 nút duyệt, thời gian thực thi 3.98ms và 1092 thao tác, thấp hơn đáng kể so với Euclidean hay Chebyshev
-    \item Sự hiệu quả của Octile/Euclidean trong 8 hướng
-    \begin{itemize}
-        \item Trong T2, Octile tìm được đường đi tối ưu (48.28) với 205 nút duyệt.
-        \item Đặc biệt trong T5, Octile thể hiện hiệu suất cực cao khi chỉ duyệt 72 nút, thời gian thực thi siêu nhanh 0.72ms và chỉ 234 thao tác.
-        \item Euclidean trong T4 và T5 cũng cho kết quả rất tốt với số nút duyệt thấp (lần lượt là 112 và 85 nút).
-    \end{itemize}
-    \item Hàm Chebyshev: Luôn tìm được đường đi ngắn nhất trong các kịch bản 8 hướng, nhưng số lượng nút duyệt thường cao hơn Octile và Euclidean (dao động từ 404 đến 565 nút trong các chế độ T2-T5).
-    \item Dijkstra (h=0): Luôn có số nút duyệt cao nhất (khoảng 900 nút) và số thao tác lớn nhất (khoảng 1800) trong mọi trường hợp. Do thiếu hàm Heuristic dẫn đường, thuật toán mở rộng vùng tìm kiếm theo mọi hướng như một vết dầu loang, dẫn đến thời gian thực thi chậm nhất.
-\end{itemize}
+    \item \textbf{Về hiệu suất tìm kiếm (Visited Nodes \& Execute Time/Operations):}
+    
+    Trong chế độ di chuyển 4 hướng (T1), Manhattan thể hiện sự vượt trội khi chỉ duyệt 510 nút, với thời gian thực thi 3.98ms và 1092 thao tác, thấp hơn đáng kể so với Euclidean và Chebyshev. Trong các cấu hình di chuyển 8 hướng, Octile và Euclidean cho thấy hiệu suất vượt trội; cụ thể, trong T2, Octile tìm được đường đi tối ưu với 205 nút duyệt, và trong T5, Octile đạt hiệu suất rất cao khi chỉ duyệt 72 nút, thời gian thực thi 0.72ms và 234 thao tác. Euclidean trong T4 và T5 cũng cho kết quả tốt với số nút duyệt lần lượt là 112 và 85. 
+    
+    Ngược lại, Chebyshev tuy luôn tìm được đường đi ngắn nhất trong các kịch bản 8 hướng nhưng số lượng nút duyệt cao hơn, dao động từ 404 đến 565 nút. Đặc biệt, Dijkstra (khi $h=0$) luôn có số nút duyệt lớn nhất (khoảng 900 nút) và số thao tác cao nhất (khoảng 1800) trong mọi trường hợp; do không sử dụng heuristic, thuật toán mở rộng không gian tìm kiếm theo mọi hướng như một vết dầu loang, dẫn đến thời gian thực thi chậm nhất.
 \end{itemize}
 \subsection{Kết luận}
 
 Từ những kết quả thực nghiệm thu được, nhóm đưa ra các kết luận sau về sự vận hành của thuật toán và tính ứng dụng của các cấu hình:
 
-\begin{itemize}
-    \item Hiệu quả của thuật toán A*: Thực nghiệm chứng minh A* vượt trội hoàn toàn so với Dijkstra về khả năng tiết kiệm tài nguyên hệ thống. Nhờ Heuristic, A* giảm thiểu từ 2 đến 10 lần số lượng nút cần duyệt tùy kịch bản mà vẫn đảm bảo tính tối ưu của đường đi.
-    \item Sự phụ thuộc vào hàm Heuristic: Việc lựa chọn hàm Heuristic đóng vai trò quyết định đến hiệu suất của hệ thống:
-    \begin{itemize}
-        \item Manhattan: Tối ưu nhất cho di chuyển 4 hướng (T1).
-        \item Octile: Là sự lựa chọn cân bằng nhất cho di chuyển 8 hướng (T2, T3, T5), đặc biệt hiệu quả khi kết hợp với cấu hình chặn góc.
-        \item Euclidean: Phát huy tốc độ tốt trong các cấu hình di chuyển tự do 8 hướng (T4, T5).
-        \item Chebyshev: Phù hợp khi chi phí đi chéo bằng đi thẳng, nhưng cần lưu ý về số lượng nút duyệt cao hơn.
-    \end{itemize}
-    \item Tác động của cấu hình di chuyển:
-    \begin{itemize}
-        \item Chế độ Diagonal Cost = 1: Việc thiết lập chi phí đường chéo bằng 1.0 giúp tối ưu hóa chiều dài đường đi xuống mức thấp nhất. Đây là cấu hình lý tưởng cho các môi trường ưu tiên tối giản số bước đi thay vì khoảng cách vật lý thực tế.
-        \item Việc cho phép di chuyển chéo (Allow Diagonal) giúp tối ưu hóa chiều dài đường đi, tạo ra các đường "chim bay" tự nhiên và ngắn hơn so với di chuyển 4 hướng truyền thống.
-        \item Chế độ Don't Cross Corners là một bổ sung quan trọng cho tính thực tế của mô phỏng, giúp tránh hiện tượng vật thể "đi xuyên" qua góc tường, mặc dù nó làm tăng nhẹ chi phí đường đi và độ phức tạp tính toán.
-    \end{itemize}
-    \item Độ tin cậy của ứng dụng: Thông qua bộ kiểm thử tự động với test\_runner.py, hệ thống đã đạt tỷ lệ thành công 100\% trên các kịch bản kiểm thử, xác nhận logic thuật toán được cài đặt chính xác và ổn định dưới nhiều điều kiện môi trường khác nhau.
-\end{itemize}
+\textbf{(i) Hiệu quả của thuật toán A*:} Kết quả thực nghiệm cho thấy thuật toán A* vượt trội hoàn toàn so với Dijkstra về khả năng tiết kiệm tài nguyên hệ thống. Nhờ sử dụng Heuristic, A* có thể giảm từ 2 đến 10 lần số lượng nút cần duyệt tùy theo từng kịch bản, đồng thời vẫn đảm bảo tính tối ưu của đường đi.
+
+\textbf{(ii) Sự phụ thuộc vào hàm Heuristic:} Việc lựa chọn hàm Heuristic đóng vai trò quyết định đến hiệu suất của hệ thống. Cụ thể, Manhattan là lựa chọn tối ưu nhất cho di chuyển 4 hướng (T1). Trong khi đó, Octile được xem là phương án cân bằng nhất cho không gian 8 hướng (T2, T3, T5), đặc biệt hiệu quả khi kết hợp với cấu hình chặn góc. Hàm Euclidean thể hiện tốc độ tốt trong các cấu hình di chuyển tự do 8 hướng (T4, T5). Ngược lại, Chebyshev phù hợp trong trường hợp chi phí đi chéo bằng đi thẳng, tuy nhiên cần lưu ý rằng số lượng nút duyệt thường cao hơn.
+
+\textbf{(iii) Tác động của cấu hình di chuyển:} Các thiết lập di chuyển có ảnh hưởng trực tiếp đến kết quả tìm đường. Việc thiết lập Diagonal Cost = 1 giúp tối ưu hóa chiều dài đường đi xuống mức thấp nhất, phù hợp với các môi trường ưu tiên số bước di chuyển thay vì khoảng cách thực tế. Bên cạnh đó, việc cho phép di chuyển chéo (Allow Diagonal) giúp tạo ra các đường đi ngắn hơn và tự nhiên hơn so với di chuyển 4 hướng. Ngoài ra, chế độ Don’t Cross Corners giúp tăng tính thực tế của mô phỏng bằng cách ngăn chặn hiện tượng đi xuyên qua góc tường, mặc dù điều này làm tăng nhẹ chi phí đường đi và độ phức tạp tính toán.
+
+\textbf{(iv) Độ tin cậy của ứng dụng:} Thông qua bộ kiểm thử tự động với \texttt{test\_runner.py}, hệ thống đã đạt tỷ lệ thành công 100\% trên tất cả các kịch bản kiểm thử. Kết quả này xác nhận rằng logic thuật toán được cài đặt chính xác và hệ thống hoạt động ổn định trong nhiều điều kiện môi trường khác nhau.
+
 
 \section*{Kết luận chương 3}
 
