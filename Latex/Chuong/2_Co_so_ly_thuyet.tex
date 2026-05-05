@@ -1,23 +1,196 @@
-\documentclass[../BTL.tex]{subfiles}
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{anyfontsize}
+\usepackage{algorithm}
+\usepackage[ruled,vlined]{algorithm2e}
+
+\AtBeginDocument{\fontsize{13pt}{15pt}\selectfont}
+\geometry{left=3cm,right=2cm,top=2cm,bottom=2cm}
+
+\titleformat{\chapter}
+{\normalfont\fontsize{24pt}{26pt}\bfseries\centering}
+{}
+{1em}
+{}
+
+\titleformat{\section}
+{\normalfont\fontsize{18pt}{20pt}\bfseries}
+{\thesection}
+{1em}
+{}
+\titleformat{\subsection}
+{\normalfont\fontsize{14pt}{16pt}\bfseries}
+{\thesubsection}
+{1em}
+{}
+
 \begin{document}
 
-Chương này có độ dài không quá 10 trang. Nếu cần trình bày dài hơn, sinh viên đưa vào phần phụ lục. Chú ý đây là kiến thức đã có sẵn; SV sau khi tìm hiểu được thì phân tích và tóm tắt lại. Sinh viên không trình bày dài dòng, chi tiết. 
+\section*{Tổng quan chương}
+Trong chương 1, nhóm đã giới thiệu khái quat về đề tài. Trong chương 2, nhóm sẽ trình bày cơ sở lý thuyết là cơ sở cho việc xây dựng và triển khai chương trình. Đầu tiên, nhóm sẽ giới thiệu  bài toán tìm đường đi ngắn nhất từ điểm xuất phát đến điểm đích trong lưới không gian hai chiều có vật cản. Đây là bài toán phổ biến trong các lĩnh vực như trí tuệ nhân tạo, robot và trò chơi điện tử. Tiếp theo, nhóm giới thiệu thuật toán A*, một thuật toán tìm kiếm có thông tin, sử dụng chi phí thực tế và giá trị heuristic để định hướng tìm kiếm. Cuối cùng, chương sẽ trình bày cách ứng dụng thuật toán A* để giải quyết bài toán tìm đường trong lưới hai chiều có vật cản, làm cơ sở cho chương sau.
 
-Sinh viên cần trình bày các nội dung bao gồm: Kiến thức nền tảng, cơ sở lý thuyết, các thuật toán, phương pháp nghiên cứu, v.v.
+\section{Giới thiệu bài toán tìm đường đi ngắn nhất từ điểm xuất phát đến điểm đích trong một lưới không gian 2 chiều có vật cản}
 
-Lưu ý: Nội dung BTL phải có tính chất liên kết, liền mạch, và nhất quán. Vì vậy, các công nghệ/thuật toán trình bày trong chương này phải khớp với nội dung giới thiệu của sinh viên ở phần trước đó. 
-
-Trong chương này, để tăng tính khoa học và độ tin cậy, sinh viên nên chỉ rõ nguồn kiến thức mình thu thập được ở tài liệu nào, đồng thời đưa tài liệu đó vào trong danh sách tài liệu tham khảo.
-
-Ví dụ: Với đề tài "Thuật toán cây quyết định ứng dụng trong bài toán phân loại văn bản", SV trình bày các nội dung trong phần "Cơ sở lý thuyết" như sau:
-\begin{itemize}
-    \item[1.] Giới thiệu về bài toán phân loại văn bản
-    \item[2.] Thuật toán cây quyết định
+\subsection{Khái niệm bài toán}
+Bài toán tìm đường đi ngắn nhất (Shortest Path Problem) là bài toán xác định tuyến đường tối ưu từ một điểm xuất phát đến một điểm đích sao cho tổng chi phí di chuyển là nhỏ nhất. Chi phí này có thể được đo qua nhiều tiêu chí như khoảng cách, thời gian, năng lượng tiêu hao hoặc số bước di chuyển.
+Trong mô hình lưới không gian 2 chiều có vật cản, môi trường được chia thành các ô vuông đều nhau tạo thành ma trận gồm hàng và cột. Mỗi ô đại diện cho một vị trí trong không gian. Các ô được chia thành: ô trống, ô vật cản, ô bắt đầu, ô đích.
+Mục tiêu của hệ thống là tìm ra chuỗi các bước di chuyển từ ô bắt đầu tới ô dích thông qua các ô trống đồng thời tránh va chạm với các ô vật cản và đảm bảo quảng đường tìm được là quãng đường ngắn nhất. 
+\subsection{Ứng dụng}
+Bài toán tìm đường đi trong lưới 2 chiều có vật cản được ứng dụng rộng rãi trong nhiều lĩnh vực như:
     \begin{itemize}
-        \item[2.1] Thuật toán ID3
-        \item[2.2] Information Gain
-        \item[2.3] Ưu nhược điểm của thuật toán cây quyết định
+        \item Robot tự hành: Robot thường phải di chuyển trong không gian rộng như nhà máy, kho hàng hoặc nhà hàng, vì vậy nó cần có thuật toán để quét môi trường làm đầu vào và xử lý để tìm ra tuyến đường tối ưu và tránh bị va chạm, hỏng hóc nhất có thể. 
+        \item Hệ thống dẫn đường: Các hệ thống bản đồ chỉ dẫn khi được cung cấp địa điểm tới thì cũng cần thuật toán để đánh giá, đưa ra tuyến đường nhanh nhất từ vị trí hiện thời tới đích, tránh những khu vực hay tắc nghẽn, đang bị cấm đường, … 
+        \item Trò chơi điện tử: Các tựa game moba như Liên minh huyền thoại, Dota2 cần cơ chế dẫn đường thông minh khi người chơi chỉ định nhân vật tiến tới 1 vị trí trên bản đồ, đảm bảo tuyến đường là ngắn nhất và không va vào địa hình trong trò chơi..
     \end{itemize}
-    \item[3.] Ứng dụng thuật toán cây quyết định trong bài toán phân loại văn bản.
+\subsection{Một số khó khăn khi giải quyết bài toán}
+Trong quá trình nghiên cứu các giải pháp cho bài toán, người nghiên cứu gặp phải nhiều khó khăn. Khi kích thước của lưới lớn, số trạng thái nhiều hơn làm cho thời gian tính toán tăng lên, gây sức ép lên bộ nhớ có thể xảy ra tràn bộ nhớ. Môi trường có thể thay đổi liên tục đòi hỏi giải thuật phải có tính đáp ứng cao, cho ra kết quả với hầu hết mọi trương hợp. Bên cạnh đó, việc tối ưu tốc độ tính toán và vấn đề lưu trữ cũng là một thách thức lớn đối với người nghiên cứu.
+
+\section{Thuật toán A*}
+\subsection{Giới thiệu về thuật toán A*}
+Nhóm thuật tìm kiếm có thông tin là các thuật toán sử dụng thêm thông tin phụ từ bài toán để định hướng tìm kiếm. Các thuật toán này sử dụng một giá trị f(n) để đánh giá độ tiềm năng của nút n từ đó chọn ra nút tốt nhất để mở rộng trước. Thuật toán A* là một thuật toán tìm kiếm thuộc nhóm thuật toán trên, rất nổi tiếng trong khoa học máy tính và trí tuệ nhân tạo. A* được đánh giá cao vì thuật toán này có thể tìm được đường đi tối ưu nhất, tốc độ tìm kiêm nhanh và được áp dụng rộng rãi trong nhiều lĩnh vực tiêu biểu như robot và game.
+\subsection{Ý tưởng của thuật toán A*}
+A* là thuật toán thuộc nhóm tìm kiếm có thông tin nên nó cũng sẽ đánh giá độ tốt của một nút n thông qua f(n). A* sẽ chọn nút n có giá trị f(n) tối ưu nhất để mở rộng trước với:
+\[
+f(n) = g(n) + h(n)
+\]
+Trong đó:
+\begin{itemize}
+    \item $g(n)$: chi phí từ điểm bắt đầu đến nút $n$
+    \item $h(n)$: ước lượng chi phí từ $n$ đến đích
 \end{itemize}
+\subsection{Mã giả của thuật toán}
+Cách thức hoạt đọng của thuật toán A* đưuọc thể hiện như sau:
+\par
+\begin{algorithm}[H] 
+\caption{A* Search}
+\KwIn{$Q, S, G, P, c, h$}
+\KwOut{Trạng thái đích}
+Khởi tạo: $O \leftarrow \{S\}$, $P \leftarrow \emptyset$\;
+\While{$O \neq \emptyset$}{
+    Lấy nút $n$ có $f(n)$ nhỏ nhất khỏi $O$\;
+    \If{$n \in G$}{
+        \Return đường đi tới $n$\;
+    }
+    \For{mọi $m \in P(n)$}{
+        $g(m) = g(n) + c(n,m)$\;
+        $f(m) = g(m) + h(m)$\;
+        thêm $m$ vào $O$\;
+        $P[m] = n$\;
+    }
+}
+\Return Không tìm được đường đi\;
+\end{algorithm}
+\noindent
+Trong quá trình thực hiện, nếu thuật toán gặp nút lặp thì trong trường hợp nút lặp có chi phí tốt hơn, nút lặp này sẽ được đưa lại vào danh sách nếu nó đã được phát triển rồi hoặc được thay thế khi nó vẫn đang còn trong danh sách.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Khi thuật toán chạy ra kết quả, có thể tiến hành truy vết đường đi thông qua cách sau:
+\par
+\begin{algorithm}[H]
+\caption{Truy vết đường đi}
+\KwIn{$G, S, P$}
+\KwOut{Đường đi từ $S$ đến $G$}
+Khởi tạo: $tmp \leftarrow G$, $path \leftarrow [\ ]$\;
+\While{$tmp \neq S$}{
+    $path.\text{push\_back}(tmp)$\;
+    $tmp \leftarrow P[tmp]$\;
+}
+$path.\text{push\_back}(S)$\;
+\Return $path.\text{reverse}()$\;
+\end{algorithm}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Latex/Hinhve/astar_search_ex.png}
+    \caption{Ví dụ chạy bằng thuật toán A*}
+    \label{fig:astar}
+\end{figure}
+\subsection{Hàm heuristic}
+Hàm heuristic là một thành phần quan trọng trong thuật toán A* có ảnh hưởng lớn tới kết quả của thuật toán tìm kiếm. Một bài toán có thể có nhiều hàm heuristic khác nhau. Một số hàm heuristic phổ biến:
+\begin{align*}
+\text{Khoảng cách Euclidean: } \quad 
+& h(n) = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2} \\
+\text{Khoảng cách Manhattan: } \quad 
+& h(n) = |x_1 - x_2| + |y_1 - y_2| \\
+\text{Khoảng cách Chebyshev: } \quad 
+& h(n) = \max\left(|x_1 - x_2|,\ |y_1 - y_2|\right)
+\end{align*}
+Hàm heuristic chấp nhận được là một khái niệm quan trọng để đánh giá tính tối ưu của thuật toán A*. 
+Khái niệm này được định nghĩa như sau: Với mọi nút $n$, nếu $h(n) \leq h^*(n)$, trong đó $h^*(n)$ là chi phí thực tế tối ưu đi từ $n$ tới đích, thì $h(n)$ được gọi là hàm heuristic chấp nhận được (admissible heuristic). Khi đó, thuật toán A* sử dụng hàm $h(n)$ sẽ đảm bảo tìm được đường đi tối ưu.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Latex/Hinhve/hauristic_ex.png}
+    \caption{Ví dụ hàm heuristic chấp nhận được}
+    \label{fig:heuristic}
+\end{figure}
+Hàm heuristic trội là khái niệm dùng để so sánh độ tới ưu giữa các hàm heuristic chấp nhận được. Với hai hàm $h_1(n)$ và $h_2(n)$ đều là hàm heuristic chấp nhận được, nếu với mọi nút $n$ có $h_1(n) \geq h_2(n)$ thì $h_1$ được coi là trội hơn $h_2$.
+\subsection{Tính chất thuật toán A*}
+Thuật toán A* có tính đầy đủ vì nếu tồn tại đường đi từ nút bắt đầu đến nút kết thúc thì thuật toán sẽ tìm ra lời giải. Điều này có thể sai nếu không gian tìm kiếm là hữu hạn hoặc có vô số nút có chi phí nhỏ hơn lời giải.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Thuật toán A* có độ phức tạp về mặt thời gian là  với b là số nhánh trung bình mỗi nút và m là độ sâu của lời giải. Thời gian chạy có thể được cải thiện nếu hàm hauristic đủ tốt để A* xác định được nút gần đích hơn và tránh chạy lan man hơn.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Thuật toán A* có độ phức tạp về mặt không gian là   với b là số nhánh trung bình mỗi nút và m là độ sâu của lời giải. Không gian lưu trữ có thể được cải thiện nếu hàm hauristic đủ tốt.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Thuật toán A* có tính tối ưu, nghĩa là sẽ tìm ra đường đi ngắn nhất nếu như hàm hauristic được sử dụng là hàm hauristic chấp nhận được.
+\subsection{Ưu và nhược điểm của thuật toán A*}
+Thuật toán A* có nhiều ưu điểm. Đầu tiên thuật toán này không những có thể tìm được đường đi từ điểm xuất phát tới đích mà còn có thể tìm được đường đi tối ưu nếu hàm hauristic được sử dụng là hàm hauristic chấp nhận được. Không những thế, A* rất linh hoạt vì có thể hoạt động tốt trong nhiều môi trường tiêu biểu như lưới hai chiều, bản đồ giao thông, đồ thị, không gian ba chiều. Thuật toán A* cũng là một thuật toán dễ cài đặt  do chủ yếu sử dụng các cấu trúc dữ liệu như hàng đợi ưu tiên, mảng, danh sách. Thuật toán này cũng có nhiều biến thể mở rộng ví dụ như IDA*, Weigthted A*, cho phép sử dụng kinh hoạt trong các bài toán khác nhau.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt}    
+Bên cạnh đó, A* cũng tồn tại một số nhược điểm. Thuật toán này tiêu tốn tài nguyên bộ nhớ, nhược điểm này cảng trở nên rõ ràng hơn khi không gian tìm kiếm lớn làm cho số lượng các trạng thái cần lưu trữ tăng lên. A* phụ thuộc nhiều vào hàm hauristic, nếu hàm hauristic không tốt có thể làm giảm hiệu năng, độ chính xác và tính tối ưu của thuật toán. 
+
+\section{Ứng dụng thuật toán A* cho bài toán tìm đường đi ngắn nhất từ điểm xuất phát đến điểm đích trong một lưới không gian 2 chiều có vật cản}
+
+\subsection{Thiết lập bài toán trong chương trình}
+Trong chương trình, không gian tìm kiếm được biểu diễn dưới dạng một lưới hai chiều kích thước cố định. Mỗi ô trong lưới tương ứng với một trạng thái, được phân loại thành ô trống hoặc ô vật cản. Hai vị trí đặc biệt là điểm bắt đầu và điểm đích được xác định trước hoặc có thể thay đổi thông qua thao tác của người dùng.
+\subsection{Xác định trạng thái và ràng buộc khi di chuyển trong lưới}
+Từ một ô hiện tại, chương trình xác định các trạng thái kế tiếp thông qua việc xét các ô lân cận. Tùy theo cấu hình, việc di chuyển có thể bao gồm: 
+\begin{itemize}
+    \item Bốn hướng cơ bản (trên, dưới, trái, phải)
+    \item Bốn hướng cơ bản và bốn hướng chéo (nếu được cho phép) 
+\end{itemize}
+Ngoài ra, chương trình còn xử lý các ràng buộc thực tế như: 
+\begin{itemize}
+    \item Không cho phép đi xuyên qua góc tường 
+    \item Kiểm soát chi phí di chuyển theo từng hướng  
+\end{itemize}
+Những yếu tố trên góp phần giúp mô hình bài toán trở nên sát với môi trường  thực tế hơn, hữu ích trong các ứng dụng mô phỏng hoặc ứng dụng cho robot
+\subsection{Tổ chức dữ liệu và quá trình tìm đường trong chương trình }
+Để triển khai thuật toán cần sử dụng các cấu trúc dữ liệu phù hợp. Cấu trúc dữ liệu hàng đợi ưu tiên lưu danh sách các nút mở kèm giá trị f(n) tương ứng, mục đích là để tối ưu hiệu năng vì đầu hàng đợi luôn là nút có trạng thái tốt nhất. Cấu trúc dữ liệu set để đánh dấu các nút đã duyệt vì set cho phép kiểm tra nút đang xét đã được duyệt chưa với tốc độ cao. Ngoài ra cấu trúc dữ liệu map cũng được sử dụng để lưu và truy xuất chi phí đường đi, quan hệ cha con giữa các nút một cách nhanh chóng. 
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Quá trình tìm đường được thực hiện theo cơ chế lặp. Ban đầu, điểm bắt đầu được đưa vào danh sách mở với chi phí bằng 0. Trong mỗi bước lặp, chương trình chọn ra trạng thái có giá trị đánh giá nhỏ nhất để mở rộng. Nếu trạng thái này trùng với điểm đích, quá trình tìm kiếm kết thúc. Nếu chưa đạt đích, trạng thái hiện tại sẽ được chuyển sang danh sách đóng, và các trạng thái lân cận của nó sẽ được xét. Với mỗi trạng thái lân cận, chương trình tính toán chi phí mới dựa trên chi phí đã có và chi phí di chuyển. Nếu đường đi mới tốt hơn, thông tin về chi phí và quan hệ cha sẽ được cập nhật, đồng thời trạng thái này được đưa vào danh sách mở. Quá trình này tiếp tục cho đến khi tìm được đường đi hoặc không còn trạng thái nào để xét
+\subsection{Trực quan hóa quá trình tìm kiếm}
+Chương trình sau khi chương trình tìm được đích, chương trình không dừng lại ở việc xác định chi phí mà còn tiến hành xây dựng lại đường đi cụ thể. Việc này được thực hiện bằng cách lần ngược từ điểm đích về điểm bắt đầu thông qua các trạng thái cha đã được lưu trước đó. Kết quả thu được là một chuỗi các ô liên tiếp biểu diễn đường đi trong lưới.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Khi chạy chương trình, quá trình tìm kiếm được trực quan hóa qua việc đánh màu sắc cho các trạng thái. Nhờ đó, người dùng có thể quan sát trực tiếp cách thuật toán mở rộng không gian tìm kiếm và dần tiến tới đích. Điều này không chỉ hỗ trợ việc kiểm tra tính đúng đắn mà còn giúp hiểu rõ hơn cơ chế hoạt động của thuật toán.
+
+\setlength{\parindent}{0pt}  
+\setlength{\parskip}{6pt} 
+Chương trình cho phép chạy thử với nhiều cấu hình khác nhau như thay đổi heuristic, bật, tắt di chuyển chéo hoặc thay đổi chi phí. Kết quả được đánh giá thông qua các chỉ số như chi phí đường đi, số lượng trạng thái đã duyệt, thời gian thực thi, số phép tính toán.
+
+\section*{Kết luận chương 2}
+
+Chương 2 đã trình bày các cơ sở lý thuyết quan trọng của đề tài. Trước hết, chương đã giới thiệu bài toán tìm đường đi ngắn nhất trong lưới hai chiều có vật cản với mục tiêu tìm được đường đi hợp lệ và tối ưu từ điểm xuất phát đến điểm đích.
+Tiếp theo, chương đã phân tích thuật toán A*, bao gồm nguyên lý hoạt động, vai trò của hàm heuristic, các tính chất, ưu điểm và hạn chế. Qua đó cho thấy A* là thuật toán phù hợp để giải quyết bài toán tìm đường trên lưới hai chiều. 
+
 \end{document}
