@@ -5,6 +5,7 @@ import random
 import time
 import math
 
+# --- Cấu hình hằng số ---
 CELL_SIZE = 25
 GRID_COLUMNS, GRID_ROWS = 45, 25
 DEFAULT_SPEED = 95
@@ -31,6 +32,7 @@ COLORS = {
 }
 
 class App(tk.Tk):
+    # ! 1. HỆ THỐNG & KHỞI TẠO (Setup & Init)
     def __init__(self):
         super().__init__()
         self.title("A* Pathfinding Visualizer")
@@ -115,19 +117,19 @@ class App(tk.Tk):
         
         tk.Button(button_frame, text='Next Step', width=14, bg=COLORS['button_step'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._step_execution).grid(row=0, column=1, padx=3, pady=3)
-                  
+        
         tk.Button(button_frame, text='Clear Path', width=14, bg=COLORS['button_clear_path'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._clear_search_path).grid(row=1, column=0, padx=3, pady=3)
-                  
+        
         tk.Button(button_frame, text='Clear Walls', width=14, bg=COLORS['button_clear_walls'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._clear_all_walls).grid(row=1, column=1, padx=3, pady=3)
-                  
+        
         tk.Button(button_frame, text='Random Walls', width=14, bg=COLORS['button_random'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._generate_random_walls).grid(row=2, column=0, padx=3, pady=3)
-                  
+        
         tk.Button(button_frame, text='Random Maze', width=14, bg=COLORS['button_random'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._generate_random_maze).grid(row=2, column=1, padx=3, pady=3)
-                  
+        
         tk.Button(button_frame, text='Compare All', width=30, bg=COLORS['button_compare'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._compare_all_heuristics).grid(row=3, column=0, columnspan=2, padx=3, pady=3)
 
@@ -141,11 +143,6 @@ class App(tk.Tk):
             stat_frame.pack(fill='x', pady=2)
             tk.Label(stat_frame, text=f'{label_text}:', font=('', 11), bg=COLORS['background_panel']).pack(side='left')
             tk.Label(stat_frame, textvariable=self.stats_vars[key], bg=COLORS['background_panel'], font=('', 11, 'bold')).pack(side='right')
-
-    def _update_ui_state(self):
-        state_value = 'normal' if self.allow_diagonal.get() else 'disabled'
-        self.checkbutton_dont_cross_corners.config(state=state_value)
-        self.checkbutton_diagonal_cost_one.config(state=state_value)
 
     def _draw_grid(self):
         self.canvas.delete('all')
@@ -166,15 +163,7 @@ class App(tk.Tk):
                     x1, y1, x1 + CELL_SIZE, y1 + CELL_SIZE,
                     fill=color, outline=COLORS['grid'], width=1)
 
-    def _update_cell_color(self, x, y, cell_type):
-        self.canvas.itemconfig(self.rectangles[(x, y)], fill=COLORS[cell_type])
-
-    def _get_cell_at(self, event):
-        x, y = event.x // CELL_SIZE, event.y // CELL_SIZE
-        if 0 <= y < GRID_ROWS and 0 <= x < GRID_COLUMNS:
-            return (x, y)
-        return None
-
+    # ! 2. TƯƠNG TÁC NGƯỜI DÙNG (User Interaction)
     def _handle_mouse_press(self, event):
         position = self._get_cell_at(event)
         if not position or self.is_running:
@@ -213,44 +202,7 @@ class App(tk.Tk):
             self.grid_data[y][x] = is_wall
             self._update_cell_color(x, y, 'wall' if is_wall else 'empty')
 
-    def _toggle_execution(self):
-        if self.is_running:
-            if self.is_step_mode:
-                self.is_step_mode = self.is_paused = False
-                self.button_start_pause.config(text='Pause', bg=COLORS['button_pause'])
-            else:
-                self.is_paused = not self.is_paused
-                self.button_start_pause.config(text='Start' if self.is_paused else 'Pause',
-                                         bg=COLORS['button_start'] if self.is_paused else COLORS['button_pause'])
-        else:
-            self._clear_search_path()
-            result, frames = self._run_astar_algorithm()
-            self.algorithm_result = result
-            self.animation_frames = frames
-            self._refresh_stats()
-            self.is_running = True
-            self.is_paused = self.is_step_mode = False
-            self.button_start_pause.config(text='Pause', bg=COLORS['button_pause'])
-            self.after(DELAY_START, self._playback_visualization)
-
-    def _step_execution(self):
-        if not self.is_running:
-            self._clear_search_path()
-            result, frames = self._run_astar_algorithm()
-            self.algorithm_result = result
-            self.animation_frames = frames
-            self._refresh_stats()
-            self.is_running = True
-            self.is_paused = False
-            self.is_step_mode = True
-            self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
-            self.after(DELAY_START, self._playback_visualization)
-        else:
-            self.is_step_mode = True
-            self.is_paused = False
-            self.has_step_event = True
-            self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
-
+    # ! 3. CÔNG CỤ BẢN ĐỒ & MÊ CUNG (Map Tools & Maze)
     def _clear_search_path(self):
         self.is_running = self.is_paused = self.is_visualized = False
         self.is_step_mode = self.has_step_event = False
@@ -314,6 +266,7 @@ class App(tk.Tk):
                 stack.pop()                
         self._reset_start_end()
 
+    # ! 4. LOGIC THUẬT TOÁN A* (A* Algorithm Logic)
     def _calculate_heuristic(self, node_a, node_b, name=None):
         dx, dy = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
         name = name or self.combobox_heuristic.get()
@@ -412,12 +365,44 @@ class App(tk.Tk):
             'path': None
         }, animation_frames
 
-    def _refresh_stats(self):
-        res = self.algorithm_result
-        self.stats_vars['path_cost'].set(res['path_cost'])
-        self.stats_vars['visited_nodes'].set(str(res['visited_nodes']))
-        self.stats_vars['execution_time'].set(f"{res['execution_time']} ms")
-        self.stats_vars['operations_count'].set(str(res['operations_count']))
+    # ! 5. ĐIỀU KHIỂN THỰC THI & DIỄN HỌA (Execution & Animation)
+    def _toggle_execution(self):
+        if self.is_running:
+            if self.is_step_mode:
+                self.is_step_mode = self.is_paused = False
+                self.button_start_pause.config(text='Pause', bg=COLORS['button_pause'])
+            else:
+                self.is_paused = not self.is_paused
+                self.button_start_pause.config(text='Start' if self.is_paused else 'Pause',
+                                         bg=COLORS['button_start'] if self.is_paused else COLORS['button_pause'])
+        else:
+            self._clear_search_path()
+            result, frames = self._run_astar_algorithm()
+            self.algorithm_result = result
+            self.animation_frames = frames
+            self._refresh_stats()
+            self.is_running = True
+            self.is_paused = self.is_step_mode = False
+            self.button_start_pause.config(text='Pause', bg=COLORS['button_pause'])
+            self.after(DELAY_START, self._playback_visualization)
+
+    def _step_execution(self):
+        if not self.is_running:
+            self._clear_search_path()
+            result, frames = self._run_astar_algorithm()
+            self.algorithm_result = result
+            self.animation_frames = frames
+            self._refresh_stats()
+            self.is_running = True
+            self.is_paused = False
+            self.is_step_mode = True
+            self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
+            self.after(DELAY_START, self._playback_visualization)
+        else:
+            self.is_step_mode = True
+            self.is_paused = False
+            self.has_step_event = True
+            self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
 
     def _playback_visualization(self, index=0):
         if not self.is_running:
@@ -443,6 +428,14 @@ class App(tk.Tk):
                         self._update_cell_color(*path_node, "path")
             self.is_running, self.is_visualized = False, True
             self.button_start_pause.config(text='Start', bg=COLORS['button_start'])
+
+    # ! 6. THỐNG KÊ & SO SÁNH (Stats & Comparison)
+    def _refresh_stats(self):
+        res = self.algorithm_result
+        self.stats_vars['path_cost'].set(res['path_cost'])
+        self.stats_vars['visited_nodes'].set(str(res['visited_nodes']))
+        self.stats_vars['execution_time'].set(f"{res['execution_time']} ms")
+        self.stats_vars['operations_count'].set(str(res['operations_count']))
 
     def _compare_all_heuristics(self):
         heuristics = ['Euclidean', 'Manhattan', 'Octile', 'Chebyshev', 'Dijkstra (h=0)']
@@ -473,6 +466,21 @@ class App(tk.Tk):
         
         window.update_idletasks()
         self.tk.call('tk::PlaceWindow', window, 'center')
+
+    # ! 7. HÀM HỖ TRỢ (Helper Methods)
+    def _update_ui_state(self):
+        state_value = 'normal' if self.allow_diagonal.get() else 'disabled'
+        self.checkbutton_dont_cross_corners.config(state=state_value)
+        self.checkbutton_diagonal_cost_one.config(state=state_value)
+
+    def _update_cell_color(self, x, y, cell_type):
+        self.canvas.itemconfig(self.rectangles[(x, y)], fill=COLORS[cell_type])
+
+    def _get_cell_at(self, event):
+        x, y = event.x // CELL_SIZE, event.y // CELL_SIZE
+        if 0 <= y < GRID_ROWS and 0 <= x < GRID_COLUMNS:
+            return (x, y)
+        return None
 
 if __name__ == '__main__':
     App().mainloop()
