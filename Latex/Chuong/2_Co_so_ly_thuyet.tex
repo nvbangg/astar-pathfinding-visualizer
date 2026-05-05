@@ -12,7 +12,7 @@
 \usepackage{graphicx}
 \usepackage{anyfontsize}
 \usepackage{algorithm}
-\usepackage{algorithmic}
+\usepackage[ruled,vlined]{algorithm2e}
 
 \AtBeginDocument{\fontsize{13pt}{15pt}\selectfont}
 \geometry{left=3cm,right=2cm,top=2cm,bottom=2cm}
@@ -70,30 +70,25 @@ Trong đó:
 \end{itemize}
 \subsection{Mã giả của thuật toán}
 Cách thức hoạt đọng của thuật toán A* đưuọc thể hiện như sau:
-\begin{algorithm}[H]
+\par
+\begin{algorithm}[H] 
 \caption{A* Search}
-\begin{algorithmic}[1]
-\STATE \textbf{Input:} $Q, S, G, P, c, h$
-\STATE \textbf{Output:} Trạng thái đích
-
-\STATE Khởi tạo: $O \leftarrow \{S\}$, $P \leftarrow \emptyset$
-
-\WHILE{$O \neq \emptyset$}
-    \STATE Lấy nút $n$ có $f(n)$ nhỏ nhất khỏi $O$
-    \IF{$n \in G$}
-        \STATE \textbf{return} đường đi tới $n$
-    \ENDIF
-
-    \FOR{mọi $m \in P(n)$}
-        \STATE $g(m) = g(n) + c(n,m)$
-        \STATE $f(m) = g(m) + h(m)$
-        \STATE thêm $m$ vào $O$
-        \STATE $P[m] = n$
-    \ENDFOR
-\ENDWHILE
-
-\STATE \textbf{return:} Không tìm được đường đi
-\end{algorithmic}
+\KwIn{$Q, S, G, P, c, h$}
+\KwOut{Trạng thái đích}
+Khởi tạo: $O \leftarrow \{S\}$, $P \leftarrow \emptyset$\;
+\While{$O \neq \emptyset$}{
+    Lấy nút $n$ có $f(n)$ nhỏ nhất khỏi $O$\;
+    \If{$n \in G$}{
+        \Return đường đi tới $n$\;
+    }
+    \For{mọi $m \in P(n)$}{
+        $g(m) = g(n) + c(n,m)$\;
+        $f(m) = g(m) + h(m)$\;
+        thêm $m$ vào $O$\;
+        $P[m] = n$\;
+    }
+}
+\Return Không tìm được đường đi\;
 \end{algorithm}
 \noindent
 Trong quá trình thực hiện, nếu thuật toán gặp nút lặp thì trong trường hợp nút lặp có chi phí tốt hơn, nút lặp này sẽ được đưa lại vào danh sách nếu nó đã được phát triển rồi hoặc được thay thế khi nó vẫn đang còn trong danh sách.
@@ -101,23 +96,18 @@ Trong quá trình thực hiện, nếu thuật toán gặp nút lặp thì trong
 \setlength{\parindent}{0pt}  
 \setlength{\parskip}{6pt} 
 Khi thuật toán chạy ra kết quả, có thể tiến hành truy vết đường đi thông qua cách sau:
+\par
 \begin{algorithm}[H]
 \caption{Truy vết đường đi}
-\begin{algorithmic}[1]
-\STATE \textbf{Input:} $G, S, P$
-\STATE \textbf{Output:} Đường đi từ $S$ đến $G$
-
-\STATE Khởi tạo: $tmp \leftarrow G$, $path \leftarrow [\ ]$
-
-\WHILE{$tmp \neq S$}
-    \STATE $path.\text{push\_back}(tmp)$
-    \STATE $tmp \leftarrow P[tmp]$
-\ENDWHILE
-
-\STATE $path.\text{push\_back}(S)$
-\STATE \textbf{return} $path.\text{reverse}()$
-
-\end{algorithmic}
+\KwIn{$G, S, P$}
+\KwOut{Đường đi từ $S$ đến $G$}
+Khởi tạo: $tmp \leftarrow G$, $path \leftarrow [\ ]$\;
+\While{$tmp \neq S$}{
+    $path.\text{push\_back}(tmp)$\;
+    $tmp \leftarrow P[tmp]$\;
+}
+$path.\text{push\_back}(S)$\;
+\Return $path.\text{reverse}()$\;
 \end{algorithm}
 \begin{figure}[H]
     \centering
