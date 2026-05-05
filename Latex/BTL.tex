@@ -74,8 +74,8 @@
 
 \setlength{\headheight}{10pt}
 
-\def \TITLE{ĐỒ ÁN TỐT NGHIỆP}
-\def \AUTHOR{NGUYỄN VĂN ABC}
+\def \TITLE{BÁO CÁO BÀI TẬP LỚN}
+\def \AUTHOR{Nhóm 4}
 
 % ===================================================
 \titleformat{\chapter}[hang]{\centering\bfseries}{CHƯƠNG \thechapter.\ }{0pt}{}[]
@@ -292,24 +292,5 @@
 \printbibliography
 \phantomsection\addcontentsline{toc}{chapter}{TÀI LIỆU THAM KHẢO}
 
-\appendixpage
-\appendices
-\addappheadtotoc
-
-% \chapter*{PHỤ LỤC} %Kết luận và hướng phát triển}
-
-%\mainmatter
-\titleformat{\chapter}[hang]{\centering\bfseries}{ \thechapter.\ }{0pt}{}[]
-\titlespacing*{\chapter}{0pt}{-20pt}{20pt}
-
-\titlecontents{chapter}
-    [0.0cm]             % left margin
-    {\bfseries\vspace{0.3cm}}                  % above code
-    {{\bfseries{\scshape} \thecontentslabel.\ }} % numbered format
-    {}         % unnumbered format
-    {\titlerule*[0.3pc]{.}\contentspage}         % filler-page-format, e.g dots
-\chapter{HƯỚNG DẪN VIẾT BÀI TẬP LỚN}
-\subfile{Chuong/Phu_luc_A}
-\newpage
 
 \end{document}
