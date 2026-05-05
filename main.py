@@ -272,33 +272,36 @@ class App(tk.Tk):
             elif (x, y) == self.end_node:
                 color = "end"
             self.canvas.itemconfig(rect_id, fill=COLORS[color])
+            
+    def _reset_start_end(self):
+        self.start_node, self.end_node = DEFAULT_START_POS, DEFAULT_END_POS
+        self.grid_data[self.start_node[1]][self.start_node[0]] = 0
+        self.grid_data[self.end_node[1]][self.end_node[0]] = 0
+        self._draw_grid()
 
     def _generate_random_walls(self):
         self._clear_all_walls()
-        rows, cols = len(self.grid_data), len(self.grid_data[0])
-        for y in range(rows):
-            for x in range(cols):
-                if (x, y) not in (self.start_node, self.end_node) and random.random() < WALL_PROBABILITY:
+        for y in range(GRID_ROWS):
+            for x in range(GRID_COLUMNS):
+                if random.random() < WALL_PROBABILITY:
                     self.grid_data[y][x] = 1
-                    self._update_cell_color(x, y, 'wall')
+        self._reset_start_end()
 
     def _generate_random_maze(self):
         # Sử dụng thuật toán Recursive Backtracking (DFS) để tạo mê cung dạng cây
         self._clear_all_walls()
-        rows, cols = len(self.grid_data), len(self.grid_data[0])
-        for y in range(1, rows - 1):
-            for x in range(1, cols - 1):
+        for y in range(1, GRID_ROWS - 1):
+            for x in range(1, GRID_COLUMNS - 1):
                 self.grid_data[y][x] = 1
         
         stack = [DEFAULT_START_POS]
         self.grid_data[DEFAULT_START_POS[1]][DEFAULT_START_POS[0]] = 0
-        
         while stack:
             cx, cy = stack[-1]
             neighbors = []
             for dy, dx in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
                 nx, ny = cx + dx, cy + dy
-                if 1 < nx < cols - 2 and 1 < ny < rows - 2 and self.grid_data[ny][nx]:
+                if 1 < nx < GRID_COLUMNS - 2 and 1 < ny < GRID_ROWS - 2 and self.grid_data[ny][nx]:
                     neighbors.append((nx, ny, cx + dx // 2, cy + dy // 2))
             
             if neighbors:
@@ -307,7 +310,7 @@ class App(tk.Tk):
                 stack.append((nx, ny))
             else:
                 stack.pop()                
-        self._draw_grid()
+        self._reset_start_end()
 
     def _calculate_heuristic(self, node_a, node_b, name=None):
         dx, dy = abs(node_a[0] - node_b[0]), abs(node_a[1] - node_b[1])
