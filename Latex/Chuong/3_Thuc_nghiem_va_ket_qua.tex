@@ -3,7 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T5]{fontenc}
 \usepackage[vietnamese]{babel}
-
+\usepackage{float}
 \usepackage{titlesec}
 \usepackage{amsmath, amsfonts, amssymb}
 \usepackage{booktabs}
@@ -91,17 +91,18 @@ Giao diện được phân bổ thành 3 phân vùng chức năng rõ rệt, đ�
         \item Execution Time: Thời gian CPU thực thi thuật toán (tính bằng mili-giây).
         \item Operations: Số bước lặp của vòng lặp thuật toán chính.
     \end{itemize}
-
-    \begin{center}
-        \includegraphics[width=1\linewidth]{../Hinhve/ui-wall.png}
-
-        \text{Hình 0. Giao diện trong trường hợp vật cản ngẫu nhiên}
-
-        \includegraphics[width=1\linewidth]{../Hinhve/ui-maze.png}
-
-        \text{Hình 0. Giao diện trong trường hợp mê cung}
-    \end{center}
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/ui-wall.png}
+        \caption{Giao diện trong trường hợp vật cản ngẫu nhiên}
+        \label{fig:ui-wall}
+        \includegraphics[width=0.75\linewidth]{Hinhve/ui-maze.png}
+        \caption{Giao diện trong trường hợp mê cung}
+        \label{fig:ui-maze}
+\end{figure}
+
  
 \subsection{Công cụ và thư viện}
 \textbf{Ngôn ngữ lập trình:} Python. Được chọn nhờ hiệu suất xử lý tốt và hệ sinh thái thư viện phong phú cho việc xử lý cấu trúc dữ liệu.
@@ -199,23 +200,30 @@ Hệ thống đã thực hiện kiểm thử trên bộ dữ liệu test\_cases.
 \end{itemize}
 Kết quả được ghi nhận như sau:
 
-\begin{center}
-    \includegraphics[width=0.7\linewidth]{../Hinhve/test-scen-1.png}
-    
-    \text{Hình 0. Kết quả Test Scenario 1}
-    
-     \includegraphics[width=0.7\linewidth]{../Hinhve/test-scen-2.png}
-    
-    \text{Hình 0. Kết quả Test Scenario 2}
-    
-     \includegraphics[width=0.7\linewidth]{../Hinhve/test-scen-3.png}
-    
-    \text{Hình 0. Kết quả Test Scenario 3}
-
-     \includegraphics[width=0.7\linewidth]{../Hinhve/test-scen-4.png}
-    
-    \text{Hình 0. Kết quả Test Scenario 4}
-\end{center}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/test-scen-1.png}
+        \caption{Kết quả Test Scenario 1}
+        \label{fig:test-scen-1}
+\end{figure}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/test-scen-2.png}
+        \caption{Kết quả Test Scenario 2}
+        \label{fig:test-scen-2}
+\end{figure}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/test-scen-3.png}
+        \caption{Kết quả Test Scenario 3}
+        \label{fig:test-scen-3}
+\end{figure}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/test-scen-4.png}
+        \caption{Kết quả Test Scenario 4}
+        \label{fig:test-scen-4}
+\end{figure}
 
  
 \subsection{Kết quả so sánh Heuristic}
@@ -224,42 +232,47 @@ Chạy chức năng Compare All trên cùng một không gian 2 chiều có vậ
 
 T1: Allow Diagonal = Tắt
 
-\begin{center}
-    \includegraphics[width=1\linewidth]{../Hinhve/table-T1.png}
-
-    \text{Hình 0. Bảng so sánh T1}
-\end{center}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/table-T1.png}
+        \caption{Bảng so sánh T1}
+        \label{fig:tabel-T1}
+\end{figure}
 
 T2: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Tắt.
 
-\begin{center}
-    \includegraphics[width=1\linewidth]{../Hinhve/table-T2.png}
-    
-    \text{Hình 0. Bảng so sánh T2}
-\end{center}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/table-T2.png}
+        \caption{Bảng so sánh T2}
+        \label{fig:tabel-T2}
+\end{figure}
 
 
 T3: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Tắt.
 
-\begin{center}
-    \includegraphics[width=1\linewidth]{../Hinhve/table-T3.png}
-
-    \text{Hình 0. Bảng so sánh T3}
-\end{center}
-
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/table-T3.png}
+        \caption{Bảng so sánh T3}
+        \label{fig:tabel-T3}
+\end{figure}
 T4: Allow Diagonal = Bật | Don't Cross = Tắt | Diag Cost 1 = Bật.
 
-\begin{center}
-    \includegraphics[width=1\linewidth]{../Hinhve/table-T4.png}
-
-    \text{Hình 0. Bảng so sánh T4}
-\end{center}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/table-T4.png}
+        \caption{Bảng so sánh T4}
+        \label{fig:tabel-T4}
+\end{figure}
 
 T5: Allow Diagonal = Bật | Don't Cross = Bật | Diag Cost 1 = Bật.
-\begin{center}
-    \includegraphics[width=1\linewidth]{../Hinhve/table-T5.png}
-    \text{Hình 0. Bảng so sánh T5}
-\end{center}
+\begin{figure}[H]
+    \centering
+        \includegraphics[width=0.75\linewidth]{Hinhve/table-T5.png}
+        \caption{Bảng so sánh T5}
+        \label{fig:tabel-T5}
+\end{figure}
  
 \section{Phân tích và kết luận}
 \subsection{Giải thích các kết quả}
