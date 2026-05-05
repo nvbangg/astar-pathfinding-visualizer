@@ -353,15 +353,16 @@ class App(tk.Tk):
         start, end = self.start_node, self.end_node
         g_scores = {start: 0.0}
         came_from = {start: None}
-        # tie_break_counter giúp ưu tiên ô tìm thấy trước (FIFO) khi bằng điểm F
         tie_break_counter, operations_count = 0, 1
-        open_set = [(self._calculate_heuristic(start, end, heuristic_name), tie_break_counter, start)]
+
+        h0 = self._calculate_heuristic(start, end, heuristic_name)
+        open_set = [(h0, h0, tie_break_counter, start)]
         closed_set = set()
         animation_frames = []
         start_time = time.perf_counter()
 
         while open_set:
-            _, _, current = heapq.heappop(open_set)
+            _, _, _, current = heapq.heappop(open_set)
             if current in closed_set:
                 continue
             
@@ -395,8 +396,9 @@ class App(tk.Tk):
                     g_scores[neighbor] = new_g
                     came_from[neighbor] = current
                     tie_break_counter += 1
-                    priority = new_g + self._calculate_heuristic(neighbor, end, heuristic_name)
-                    heapq.heappush(open_set, (priority, tie_break_counter, neighbor))
+                    h = self._calculate_heuristic(neighbor, end, heuristic_name)
+                    f = new_g + h
+                    heapq.heappush(open_set, (f, h, tie_break_counter, neighbor))
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000
         return {
