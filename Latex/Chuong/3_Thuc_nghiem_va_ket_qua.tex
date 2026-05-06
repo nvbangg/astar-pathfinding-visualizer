@@ -74,7 +74,7 @@ Hệ thống được xây dựng với kiến trúc hướng sự kiện, tập
 
 \begin{itemize}
     \item Quản lý môi trường: Khởi tạo ma trận lưới 2D. Cho phép người dùng tùy chỉnh kích thước lưới động.
-    \item Tương tác bản đồ: Tích hợp tính năng kéo-thả cho các điểm Start và End. Hỗ trợ nhấp/kéo chuột trái để vẽ tường và nhấp/kéo vào tường để xóa.
+    \item Tương tác bản đồ: Tích hợp tính năng kéo-thả cho các điểm Start và End. Hỗ trợ nhấp/kéo chuột trái để vẽ tường và nhấp/kéo vào tường để xóa. Cung cấp chức năng lưu trữ (Save Map) và tải bản đồ (Load Map) từ định dạng file JSON, giúp người dùng dễ dàng lưu lại, chia sẻ hoặc tái sử dụng các kịch bản kiểm thử không gian phức tạp.
     \item Thực thi thuật toán: Kích hoạt bộ giải thuật A* theo thời gian thực hoặc từng bước để quan sát sự lan truyền của tập mở và tập đóng.
     \item Tùy chỉnh tham số: Cung cấp menu lựa chọn linh hoạt các hàm heuristic và luật di chuyển trước mỗi lần thực thi.
 \end{itemize}
@@ -282,23 +282,23 @@ Dựa trên dữ liệu thực nghiệm từ phần kết quả so sánh Heurist
 \item Về chi phí đường đi (Path Cost): 
 
 \begin{itemize}
-    \item Khi tắt di chuyển chéo (T1): Tất cả các Heuristic đều cho cùng một kết quả chi phí là 60.00, chứng tỏ khi di chuyển 4 hướng, các hàm heuristic đều tìm được đường đi ngắn nhất
-    \item Khi bật di chuyển chéo (T2, T3, T4, T5): Chi phí giảm đáng kể so với T1. Trong điều kiện tiêu chuẩn (T2), chi phí là 48.28. Khi thiết lập Diagonal Cost = 1 (T4), chi phí đạt mức tối thiểu là 40.00.
-    \item Ảnh hưởng của Don't Cross Corners: Ở chế độ này (T3, T5), chi phí tăng nhẹ so với khi không chặn góc (từ 48.28 lên 50.63 ở T3; từ 40.00 lên 43.00 ở T5). Điều này do thuật toán phải đi vòng qua các góc vật cản thay vì đi chéo xuyên qua điểm tiếp xúc giữa hai vật cản.
-    \item Tính tối ưu của Manhattan: Trong các chế độ di chuyển 8 hướng có trọng số (T2, T3, T5), hàm Manhattan thường cho kết quả Path Cost cao hơn (ví dụ 49.94 so với 48.28 ở T2). Lý do là Manhattan không tính toán chính xác chi phí đường chéo, dẫn đến việc đánh giá sai độ ưu tiên và tìm ra đường đi chưa tối ưu tuyệt đối trong không gian 8 hướng.
+    \item Khi tắt di chuyển chéo (T1): Tất cả các Heuristic và thuật toán Dijkstra đều cho cùng một kết quả chi phí là 18.00, chứng tỏ khi di chuyển 4 hướng, tất cả đều đảm bảo tìm được đường đi ngắn nhất.
+    \item Khi bật di chuyển chéo tiêu chuẩn (T2): Chi phí tối ưu giảm xuống còn 13.31 (tìm thấy bởi Dijkstra, Euclidean, Octile, Chebyshev). Tuy nhiên, hàm Manhattan cho ra kết quả chưa tối ưu là 13.90. Nguyên nhân do Manhattan thường đánh giá quá cao (overestimate) chi phí đường chéo, dẫn đến tính không chấp nhận được (inadmissible) trong không gian 8 hướng tiêu chuẩn.
+    \item Ảnh hưởng của Don't Cross Corners (T3): Việc cấm đi xuyên qua các góc tường khiến đường đi phải vòng qua vật cản. Chi phí tối ưu tăng từ 13.31 lên 14.49. Tại đây, hàm Manhattan tiếp tục cho kết quả không tối ưu (15.07).
+    \item Chế độ Diagonal Cost = 1 (T4 \& T5): Đây là kịch bản "Bẫy Heuristic". Khi đi chéo có giá trị bằng đi thẳng, đường đi ngắn nhất giảm xuống mức tối thiểu (10.00 ở T4 và 12.00 ở T5, tìm bởi Chebyshev và Dijkstra). Lúc này, các hàm như Euclidean, Octile và Manhattan ước lượng chi phí lớn hơn thực tế, làm mất đi tính Chấp nhận được. Hậu quả là chúng tìm ra đường đi có chi phí lớn hơn (11.00 ở T4 và 13.00 ở T5). Chỉ Chebyshev hoạt động đúng với chi phí tối ưu trong trường hợp này.
 \end{itemize}
-\item Về hiệu suất tìm kiếm (Visited Nodes \& Execute Time/ Operations): 
+\item Về hiệu suất tìm kiếm (Visited Nodes \& Execute Time / Operations): 
 
 \begin{itemize}
-    \item Sự vượt trội của Manhattan trong T1: Ở chế độ 4 hướng, Manhattan là hàm hiệu quả nhất với 510 nút duyệt, thời gian thực thi 3.98ms và 1092 thao tác, thấp hơn đáng kể so với Euclidean hay Chebyshev
-    \item Sự hiệu quả của Octile/Euclidean trong 8 hướng
+    \item Sự vượt trội của Manhattan trong T1: Ở chế độ 4 hướng, Manhattan là hàm hiệu quả nhất với chỉ 42 nút duyệt và 96 thao tác, thấp hơn đáng kể so với Euclidean, Octile hay Chebyshev (đều duyệt 61 nút).
+    \item Sự phân hóa trong môi trường 8 hướng tiêu chuẩn (T2 \& T3):
     \begin{itemize}
-        \item Trong T2, Octile tìm được đường đi tối ưu (48.28) với 205 nút duyệt.
-        \item Đặc biệt trong T5, Octile thể hiện hiệu suất cực cao khi chỉ duyệt 72 nút, thời gian thực thi siêu nhanh 0.72ms và chỉ 234 thao tác.
-        \item Euclidean trong T4 và T5 cũng cho kết quả rất tốt với số nút duyệt thấp (lần lượt là 112 và 85 nút).
+        \item Octile và Euclidean thể hiện sức mạnh định hướng xuất sắc, chỉ cần duyệt số lượng nút rất nhỏ (17 - 18 nút ở T2, và khoảng 40 - 43 nút ở T3) để tìm ra đường đi ngắn nhất 13.31 (hoặc 14.49). 
+        \item Chebyshev mặc dù tìm được đường đi tối ưu, nhưng luôn tốn nhiều tài nguyên hơn (duyệt từ 39 đến 49 nút).
+        \item Manhattan có tốc độ nhanh, duyệt ít nút (22 - 25 nút) nhưng lại không đảm bảo tìm được đường đi tốt nhất.
     \end{itemize}
-    \item Hàm Chebyshev: Luôn tìm được đường đi ngắn nhất trong các kịch bản 8 hướng, nhưng số lượng nút duyệt thường cao hơn Octile và Euclidean (dao động từ 404 đến 565 nút trong các chế độ T2-T5).
-    \item Dijkstra (h=0): Luôn có số nút duyệt cao nhất (khoảng 900 nút) và số thao tác lớn nhất (khoảng 1800) trong mọi trường hợp. Do thiếu hàm Heuristic dẫn đường, thuật toán mở rộng vùng tìm kiếm theo mọi hướng như một vết dầu loang, dẫn đến thời gian thực thi chậm nhất.
+    \item Kịch bản Bẫy (T4 \& T5): Chebyshev chứng tỏ là hàm Heuristic lý tưởng khi Cost chéo = 1, vừa tìm được đường đi ngắn nhất vừa duyệt cực ít (15 nút ở T4, 37 nút ở T5). Các hàm khác có thể duyệt ít nút hơn (ví dụ Octile 12 nút ở T4) nhưng cái giá phải trả là đưa ra kết quả thiếu chính xác.
+    \item Thuật toán Dijkstra (h=0): Luôn đảm bảo kết quả chính xác tuyệt đối nhưng có số nút duyệt cao nhất (76 - 77 nút, gần bằng tổng diện tích lưới trừ đi vật cản) và số thao tác lớn nhất (hơn 150) trong mọi trường hợp do mở rộng vùng tìm kiếm theo mọi hướng.
 \end{itemize}
 \end{itemize}
 \subsection{Kết luận}
@@ -306,21 +306,15 @@ Dựa trên dữ liệu thực nghiệm từ phần kết quả so sánh Heurist
 Từ những kết quả thực nghiệm thu được, nhóm đưa ra các kết luận sau về sự vận hành của thuật toán và tính ứng dụng của các cấu hình:
 
 \begin{itemize}
-    \item Hiệu quả của thuật toán A*: Thực nghiệm chứng minh A* vượt trội hoàn toàn so với Dijkstra về khả năng tiết kiệm tài nguyên hệ thống. Nhờ Heuristic, A* giảm thiểu từ 2 đến 10 lần số lượng nút cần duyệt tùy kịch bản mà vẫn đảm bảo tính tối ưu của đường đi.
-    \item Sự phụ thuộc vào hàm Heuristic: Việc lựa chọn hàm Heuristic đóng vai trò quyết định đến hiệu suất của hệ thống:
+    \item Hiệu quả của thuật toán A*: Thực nghiệm chứng minh A* vượt trội hoàn toàn so với thuật toán duyệt mù Dijkstra về khả năng tiết kiệm tài nguyên. Nhờ có định hướng từ Heuristic, A* có thể giảm tới hơn 4 lần lượng nút cần duyệt (ví dụ 17 nút so với 77 nút ở kịch bản T2) mà vẫn đảm bảo tính tối ưu tuyệt đối.
+    \item Tầm quan trọng của tính Chấp nhận được (Admissibility): Thực nghiệm "Bẫy Heuristic" đã trực quan hóa lý thuyết toán học một cách sinh động. Khi Heuristic đánh giá sai lệch, ví dụ Manhattan trong môi trường 8 hướng (T2, T3) hay Euclidean/Octile trong môi trường chi phí đi chéo bằng 1 (T4, T5), thuật toán A* mất đi khả năng đảm bảo đường đi tối ưu dù tốc độ thực thi rất nhanh.
+    \item Sự phụ thuộc vào hàm Heuristic: Việc lựa chọn hàm Heuristic đóng vai trò quyết định:
     \begin{itemize}
-        \item Manhattan: Tối ưu nhất cho di chuyển 4 hướng (T1).
-        \item Octile: Là sự lựa chọn cân bằng nhất cho di chuyển 8 hướng (T2, T3, T5), đặc biệt hiệu quả khi kết hợp với cấu hình chặn góc.
-        \item Euclidean: Phát huy tốc độ tốt trong các cấu hình di chuyển tự do 8 hướng (T4, T5).
-        \item Chebyshev: Phù hợp khi chi phí đi chéo bằng đi thẳng, nhưng cần lưu ý về số lượng nút duyệt cao hơn.
+        \item Manhattan: Là lựa chọn tốt nhất, nhanh nhất cho cấu hình chỉ đi 4 hướng (T1).
+        \item Octile \& Euclidean: Là sự lựa chọn cân bằng và hiệu quả nhất cho cấu hình di chuyển 8 hướng tiêu chuẩn có trọng số (T2, T3).
+        \item Chebyshev: Là hàm duy nhất tối ưu cho lưới cho phép đi chéo với chi phí quy đổi bằng đi thẳng (T4, T5).
     \end{itemize}
-    \item Tác động của cấu hình di chuyển:
-    \begin{itemize}
-        \item Chế độ Diagonal Cost = 1: Việc thiết lập chi phí đường chéo bằng 1.0 giúp tối ưu hóa chiều dài đường đi xuống mức thấp nhất. Đây là cấu hình lý tưởng cho các môi trường ưu tiên tối giản số bước đi thay vì khoảng cách vật lý thực tế.
-        \item Việc cho phép di chuyển chéo (Allow Diagonal) giúp tối ưu hóa chiều dài đường đi, tạo ra các đường "chim bay" tự nhiên và ngắn hơn so với di chuyển 4 hướng truyền thống.
-        \item Chế độ Don't Cross Corners là một bổ sung quan trọng cho tính thực tế của mô phỏng, giúp tránh hiện tượng vật thể "đi xuyên" qua góc tường, mặc dù nó làm tăng nhẹ chi phí đường đi và độ phức tạp tính toán.
-    \end{itemize}
-    \item Độ tin cậy của ứng dụng: Thông qua bộ kiểm thử tự động với test\_runner.py, hệ thống đã đạt tỷ lệ thành công 100\% trên các kịch bản kiểm thử, xác nhận logic thuật toán được cài đặt chính xác và ổn định dưới nhiều điều kiện môi trường khác nhau.
+    \item Độ tin cậy của ứng dụng: Thông qua việc tích hợp tính năng Save/Load Map linh hoạt cùng bộ kiểm thử tự động với test\_cases.json, hệ thống đã chứng minh được logic giải thuật được cài đặt chính xác, phản ánh đúng lý thuyết và cung cấp trải nghiệm ổn định cho người sử dụng.
 \end{itemize}
 
 \section*{Kết luận chương 3}

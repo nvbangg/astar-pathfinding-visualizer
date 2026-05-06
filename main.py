@@ -1,9 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 import heapq
 import random
 import time
 import math
+import json
 
 # --- Cấu hình hằng số ---
 CELL_SIZE = 25
@@ -27,7 +28,7 @@ COLORS = {
     'button_start': '#4CAF50', 'button_pause': '#FF9800',
     'button_step': '#607D8B',  'button_clear_path': '#E53935',
     'button_clear_walls': '#E53935', 'button_random': '#795548',
-    'button_compare': '#3F51B5',
+    'button_compare': '#3F51B5', 'button_save_load': '#607D8B',
     'header': '#E0E0E0', 'row': '#F9FBE7', 'error': '#FFEBEE',
 }
 
@@ -130,8 +131,14 @@ class App(tk.Tk):
         tk.Button(button_frame, text='Random Maze', width=14, bg=COLORS['button_random'], fg=COLORS['button_foreground'],
                   font=('', 10, 'bold'), relief='flat', pady=4, command=self._generate_random_maze).grid(row=2, column=1, padx=3, pady=3)
         
+        tk.Button(button_frame, text='Save Map', width=14, bg=COLORS['button_save_load'], fg=COLORS['button_foreground'],
+                  font=('', 10, 'bold'), relief='flat', pady=4, command=self._save_map).grid(row=3, column=0, padx=3, pady=3)
+        
+        tk.Button(button_frame, text='Load Map', width=14, bg=COLORS['button_save_load'], fg=COLORS['button_foreground'],
+                  font=('', 10, 'bold'), relief='flat', pady=4, command=self._load_map).grid(row=3, column=1, padx=3, pady=3)
+        
         tk.Button(button_frame, text='Compare All', width=30, bg=COLORS['button_compare'], fg=COLORS['button_foreground'],
-                  font=('', 10, 'bold'), relief='flat', pady=4, command=self._compare_all_heuristics).grid(row=3, column=0, columnspan=2, padx=3, pady=3)
+                  font=('', 10, 'bold'), relief='flat', pady=4, command=self._compare_all_heuristics).grid(row=4, column=0, columnspan=2, padx=3, pady=3)
 
         # Statistics
         ttk.Separator(panel, orient='horizontal').pack(fill='x', pady=12)
@@ -265,6 +272,28 @@ class App(tk.Tk):
             else:
                 stack.pop()                
         self._reset_start_end()
+
+    def _save_map(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if file_path:
+            with open(file_path, 'w') as f:
+                json.dump({'matrix': self.grid_data, 'start': self.start_node, 'end': self.end_node}, f)
+
+    def _load_map(self):
+        file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        if file_path:
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                if isinstance(data, list): 
+                    data = data[0]
+                self._clear_all_walls()
+                matrix = data.get('matrix', [])
+                for y in range(min(GRID_ROWS, len(matrix))):
+                    for x in range(min(GRID_COLUMNS, len(matrix[y]))):
+                        self.grid_data[y][x] = matrix[y][x]
+                self.start_node = tuple(data.get('start', self.start_node))
+                self.end_node = tuple(data.get('end', self.end_node))
+                self._draw_grid()
 
     # ! 4. LOGIC THUẬT TOÁN A* (A* Algorithm Logic)
     def _calculate_heuristic(self, node_a, node_b, name=None):
