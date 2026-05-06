@@ -294,7 +294,7 @@ Dựa trên dữ liệu thực nghiệm từ phần kết quả so sánh Heurist
     \item Sự phân hóa trong môi trường 8 hướng tiêu chuẩn (T2 \& T3):
     \begin{itemize}
         \item Octile và Euclidean thể hiện sức mạnh định hướng xuất sắc, chỉ cần duyệt số lượng nút rất nhỏ (17 - 18 nút ở T2, và khoảng 40 - 43 nút ở T3) để tìm ra đường đi ngắn nhất 13.31 (hoặc 14.49). 
-        \item Chebyshev mặc dù tìm được đường đi tối ưu, nhưng luôn tốn nhiều tài nguyên hơn (duyệt từ 39 đến 49 nút).
+        \item Chebyshev đảm bảo tìm được đường đi tối ưu, tuy nhiên trong các kịch bản 8 hướng tiêu chuẩn (T2, T3), số lượng nút duyệt cao hơn đáng kể so với Octile và Euclidean (dao động từ 39 đến 49 nút).
         \item Manhattan có tốc độ nhanh, duyệt ít nút (22 - 25 nút) nhưng lại không đảm bảo tìm được đường đi tốt nhất.
     \end{itemize}
     \item Kịch bản Bẫy (T4 \& T5): Chebyshev chứng tỏ là hàm Heuristic lý tưởng khi Cost chéo = 1, vừa tìm được đường đi ngắn nhất vừa duyệt cực ít (15 nút ở T4, 37 nút ở T5). Các hàm khác có thể duyệt ít nút hơn (ví dụ Octile 12 nút ở T4) nhưng cái giá phải trả là đưa ra kết quả thiếu chính xác.
