@@ -35,12 +35,22 @@ def main():
         end_node = tuple(scenario['end'])
         
         for mode_name, allow_diag, dont_cross, cost_one, json_key in TEST_MODES:
-            expected_cost = scenario['expected_costs'].get(json_key)
-            if expected_cost is None:
+            expected_data = scenario['expected_costs'].get(json_key)
+            if expected_data is None:
                 continue
 
             print(f"\n[{mode_name}]")
             for heuristic in HEURISTICS:
+                # Lấy giá trị expected cụ thể cho heuristic nếu có, ngược lại dùng default
+                if isinstance(expected_data, dict):
+                    h_name_key = heuristic.split(' (')[0]
+                    expected_cost = expected_data.get(h_name_key, expected_data.get('default'))
+                else:
+                    expected_cost = expected_data
+
+                if expected_cost is None:
+                    continue
+
                 # Cấu hình App cho test case hiện tại
                 app_instance.grid_data = [row[:] for row in matrix]
                 app_instance.start_node = start_node

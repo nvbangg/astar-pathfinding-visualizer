@@ -8,51 +8,105 @@
     "start": [0, 0],
     "end": [1, 1],
     "expected_costs": {
-      "no_diagonal": 2.0,
-      "diagonal_normal": 1.41,
-      "diagonal_dont_cross": 2.0,
-      "diagonal_cost1": 1.0,
-      "diagonal_cost1_dont_cross": 2.0
+      "no_diagonal": {
+        "default": 2.0
+      },
+      "diagonal_normal": {
+        "default": 1.41
+      },
+      "diagonal_dont_cross": {
+        "default": 2.0
+      },
+      "diagonal_cost1": {
+        "default": 1.0
+      },
+      "diagonal_cost1_dont_cross": {
+        "default": 2.0
+      }
     }
   },
   {
-    "name": "Medium 5x6",
+    "name": "Heuristic Trap 1",
     "matrix": [
-      [0, 0, 0, 0, 0],
-      [1, 0, 1, 1, 0],
-      [1, 0, 1, 0, 0],
-      [0, 1, 0, 0, 0],
-      [1, 0, 1, 1, 0],
-      [0, 0, 1, 0, 0]
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+      [0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+      [1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+      [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+      [0, 1, 1, 0, 0, 0, 0, 0, 0, 0]
     ],
-    "start": [1, 1],
-    "end": [4, 4],
+    "start": [0, 0],
+    "end": [9, 9],
     "expected_costs": {
-      "no_diagonal": 8.0,
-      "diagonal_normal": 6.83,
-      "diagonal_dont_cross": 8.0,
-      "diagonal_cost1": 6.0,
-      "diagonal_cost1_dont_cross": 8.0
+      "no_diagonal": {
+        "default": 18.0
+      },
+      "diagonal_normal": {
+        "default": 13.31,
+        "Manhattan": 13.9
+      },
+      "diagonal_dont_cross": {
+        "default": 14.49,
+        "Manhattan": 15.07
+      },
+      "diagonal_cost1": {
+        "default": 10.0,
+        "Euclidean": 11.0,
+        "Manhattan": 11.0,
+        "Octile": 11.0
+      },
+      "diagonal_cost1_dont_cross": {
+        "default": 12.0,
+        "Euclidean": 13.0,
+        "Manhattan": 13.0,
+        "Octile": 13.0
+      }
     }
   },
   {
-    "name": "U-Shape Obstacle",
+    "name": "Heuristic Trap 2",
     "matrix": [
-      [0, 0, 0, 0, 0],
-      [0, 0, 1, 1, 0],
-      [0, 0, 1, 0, 0],
-      [0, 0, 1, 0, 0],
-      [1, 0, 1, 1, 0],
-      [0, 0, 0, 0, 0]
+      [0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+      [0, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+      [0, 1, 0, 1, 0, 0, 0, 0, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+      [0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0]
     ],
-    "start": [0, 3],
-    "end": [3, 3],
+    "start": [0, 0],
+    "end": [9, 9],
     "expected_costs": {
-      "no_diagonal": 9.0,
-      "diagonal_normal": 6.66,
-      "diagonal_dont_cross": 9.0,
-      "diagonal_cost1": 5.0,
-      "diagonal_cost1_dont_cross": 9.0
+      "no_diagonal": {
+        "default": 18.0
+      },
+      "diagonal_normal": {
+        "default": 13.31,
+        "Manhattan": 13.9
+      },
+      "diagonal_dont_cross": {
+        "default": 15.07,
+        "Manhattan": 15.66
+      },
+      "diagonal_cost1": {
+        "default": 10.0,
+        "Euclidean": 11.0,
+        "Manhattan": 11.0,
+        "Octile": 11.0
+      },
+      "diagonal_cost1_dont_cross": {
+        "default": 13.0,
+        "Euclidean": 14.0,
+        "Manhattan": 14.0,
+        "Octile": 14.0
+      }
     }
   },
   {
@@ -82,11 +136,21 @@
     "start": [4, 4],
     "end": [19, 19],
     "expected_costs": {
-      "no_diagonal": 30.0,
-      "diagonal_normal": 21.21,
-      "diagonal_dont_cross": 21.21,
-      "diagonal_cost1": 15.0,
-      "diagonal_cost1_dont_cross": 15.0
+      "no_diagonal": {
+        "default": 30.0
+      },
+      "diagonal_normal": {
+        "default": 21.21
+      },
+      "diagonal_dont_cross": {
+        "default": 21.21
+      },
+      "diagonal_cost1": {
+        "default": 15.0
+      },
+      "diagonal_cost1_dont_cross": {
+        "default": 15.0
+      }
     }
   }
 ]
