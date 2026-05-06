@@ -132,8 +132,8 @@ Giao diện được phân bổ thành 3 phân vùng chức năng rõ rệt, đ�
 
 \begin{itemize}
     \item Scenario 1 - Lưới nhỏ (2x2): Mục tiêu nhằm kiểm tra luồng hoạt động cơ bản nhất của phần mềm, đảm bảo thuật toán khởi tạo/dừng đúng quy trình.
-    \item Scenario 2 - Lưới trung bình (5x6) với vật cản ngẫu nhiên: Kiểm tra khả năng tránh chướng ngại vật cơ bản. Đánh giá tính đúng đắn của việc loại bỏ các node là tường khỏi tập hợp node láng giềng hợp lệ.
-    \item Scenario 3 - Mô hình bẫy (U-Shape Obstacle): Điểm đích được đặt sâu bên trong một vách ngăn hình chữ U. Đây là kịch bản kinh điển nhằm đánh giá sự khác biệt cốt lõi giữa A* và thuật toán tham lam. A* sẽ ban đầu đi vào bẫy, nhưng sau đó nhờ chi phí g(n)tăng cao, nó sẽ tự động lùi lại và tìm đường vòng qua chữ U.
+    \item Scenario 2 - Heuristic Trap 1: Lưới được thiết kế đặc biệt để thể hiện tính không tối ưu của hàm Manhattan trong chế độ di chuyển 8 hướng tiêu chuẩn (T2, T3) và tính không tối ưu của cả ba hàm Manhattan, Euclidean, Octile khi sử dụng chi phí di chuyển chéo bằng 1 (T4, T5).
+    \item Scenario 3 - Heuristic Trap 2: Lưới khác được thiết kế đặc biệt để thể hiện tính không tối ưu của hàm Manhattan trong chế độ di chuyển 8 hướng tiêu chuẩn (T2, T3) và tính không tối ưu của cả ba hàm Manhattan, Euclidean, Octile khi sử dụng chi phí di chuyển chéo bằng 1 (T4, T5).
     \item Scenario 4 - Lưới diện rộng (20x20 rỗng): Môi trường hoàn toàn trống, Start ở góc trên bên trái, End ở góc dưới cùng bên phải. Kịch bản này làm nổi bật tối đa sự chênh lệch về thời gian thực thi (Execute Time) và số node đã duyệt (Visited Nodes) giữa các hàm Heuristic khác nhau.
 \end{itemize}
 
