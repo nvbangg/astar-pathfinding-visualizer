@@ -178,7 +178,7 @@ Những yếu tố trên góp phần giúp mô hình bài toán trở nên sát 
 \setlength{\parskip}{6pt} 
 Quá trình tìm đường được thực hiện theo cơ chế lặp. Ban đầu, điểm bắt đầu được đưa vào danh sách mở với chi phí bằng 0. Trong mỗi bước lặp, chương trình chọn ra trạng thái có giá trị đánh giá nhỏ nhất để mở rộng. Nếu trạng thái này trùng với điểm đích, quá trình tìm kiếm kết thúc. Nếu chưa đạt đích, trạng thái hiện tại sẽ được chuyển sang danh sách đóng, và các trạng thái lân cận của nó sẽ được xét. Với mỗi trạng thái lân cận, chương trình tính toán chi phí mới dựa trên chi phí đã có và chi phí di chuyển. Nếu đường đi mới tốt hơn, thông tin về chi phí và quan hệ cha sẽ được cập nhật, đồng thời trạng thái này được đưa vào danh sách mở. Quá trình này tiếp tục cho đến khi tìm được đường đi hoặc không còn trạng thái nào để xét
 \subsection{Trực quan hóa quá trình tìm kiếm}
-Chương trình sau khi chương trình tìm được đích, chương trình không dừng lại ở việc xác định chi phí mà còn tiến hành xây dựng lại đường đi cụ thể. Việc này được thực hiện bằng cách lần ngược từ điểm đích về điểm bắt đầu thông qua các trạng thái cha đã được lưu trước đó. Kết quả thu được là một chuỗi các ô liên tiếp biểu diễn đường đi trong lưới.
+Sau khi tìm được đích, chương trình không dừng lại ở việc xác định chi phí mà còn tiến hành xây dựng lại đường đi cụ thể. Việc này được thực hiện bằng cách lần ngược từ điểm đích về điểm bắt đầu thông qua các trạng thái cha đã được lưu trước đó. Kết quả thu được là một chuỗi các ô liên tiếp biểu diễn đường đi trong lưới.
 
 \setlength{\parindent}{0pt}  
 \setlength{\parskip}{6pt} 
