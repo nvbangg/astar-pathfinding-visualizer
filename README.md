@@ -1,4 +1,6 @@
-# A* (A-star) pathfinding algorithm visualizer
+# [A* (A-star) pathfinding algorithm visualizer](https://github.com/nvbangg/astar-pathfinding-visualizer)
+
+## Demo: https://nvbangg.github.io/astar-pathfinding-visualizer/
 
 ![image](Latex/Hinhve/ui-wall.png)
 ![image](Latex/Hinhve/ui-maze.png)
