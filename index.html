@@ -1,72 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A* Pathfinding Visualizer</title>
-<meta name="description" content="A* (A-star) pathfinding algorithm visualizer.">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A* Pathfinding Visualizer</title>
+  <meta name="description" content="A* (A-star) pathfinding algorithm visualizer.">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div id="canvas-container">
-  <canvas id="canvas"></canvas>
-  <div id="github-link">
-    <svg height="18" width="18" viewBox="0 0 16 16" style="vertical-align: middle; fill: currentColor;"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-    GitHub: <a href="https://github.com/nvbangg/astar-pathfinding-visualizer" target="_blank">https://github.com/nvbangg/astar-pathfinding-visualizer</a>
-  </div>
-</div>
-
-<div id="panel">
-  <h2>Settings</h2>
-  <label>Heuristic:</label>
-  <select id="heuristic">
-    <option>Euclidean</option>
-    <option>Manhattan</option>
-    <option>Octile</option>
-    <option>Chebyshev</option>
-    <option>Dijkstra (h=0)</option>
-  </select>
-
-  <label><input type="checkbox" id="allow-diagonal" checked> Allow Diagonal</label>
-  <label class="indent"><input type="checkbox" id="no-cross-corners"> Don't Cross Corners</label>
-  <label class="indent"><input type="checkbox" id="diagonal-cost-one"> Diagonal Cost = 1</label>
-
-  <label style="margin-top:5px">Speed:</label>
-  <input type="range" id="speed" min="1" max="100" value="95">
-
-  <hr>
-  <h2>Controls</h2>
-  <div class="btn-grid">
-    <button id="btn-start" style="background:#4CAF50">Start</button>
-    <button id="btn-step"  style="background:#607D8B">Next Step</button>
-    <button id="btn-clear-path"  style="background:#E53935">Clear Path</button>
-    <button id="btn-clear-walls" style="background:#E53935">Clear Walls</button>
-    <button id="btn-rand-walls"  style="background:#795548">Random Walls</button>
-    <button id="btn-rand-maze"   style="background:#795548">Random Maze</button>
-    <button id="btn-save"        style="background:#607D8B">Save Map</button>
-    <button id="btn-load"        style="background:#607D8B">Load Map</button>
-    <button id="btn-compare"     class="btn-full" style="background:#3F51B5">Compare All</button>
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+    <div id="github-link">
+      <svg height="18" width="18" viewBox="0 0 16 16" style="vertical-align: middle; fill: currentColor;">
+        <path
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+        </path>
+      </svg>
+      GitHub: <a href="https://github.com/nvbangg/astar-pathfinding-visualizer"
+        target="_blank">https://github.com/nvbangg/astar-pathfinding-visualizer</a>
+    </div>
   </div>
 
-  <hr>
-  <h2>Statistics</h2>
-  <div class="stat-row"><span>Path Cost:</span> <span class="stat-val" id="st-cost">-</span></div>
-  <div class="stat-row"><span>Visited Nodes:</span> <span class="stat-val" id="st-visited">-</span></div>
-  <div class="stat-row"><span>Execute Time:</span> <span class="stat-val" id="st-time">-</span></div>
-  <div class="stat-row"><span>Operations:</span> <span class="stat-val" id="st-ops">-</span></div>
-</div>
+  <div id="panel">
+    <h2>Settings</h2>
+    <label>Heuristic:</label>
+    <select id="heuristic">
+      <option>Euclidean</option>
+      <option>Manhattan</option>
+      <option>Octile</option>
+      <option>Chebyshev</option>
+      <option>Dijkstra (h=0)</option>
+    </select>
 
-<div id="compare-modal">
-  <div id="compare-box">
-    <span id="close-modal">&times;</span>
-    <h3>Heuristic Comparison</h3>
-    <table id="compare-table"></table>
+    <label><input type="checkbox" id="allow-diagonal" checked> Allow Diagonal</label>
+    <label class="indent"><input type="checkbox" id="no-cross-corners"> Don't Cross Corners</label>
+    <label class="indent"><input type="checkbox" id="diagonal-cost-one"> Diagonal Cost = 1</label>
+
+    <label style="margin-top:5px">Speed:</label>
+    <input type="range" id="speed" min="1" max="100" value="95">
+
+    <hr>
+    <h2>Controls</h2>
+    <div class="btn-grid">
+      <button id="btn-start" style="background:#4CAF50">Start</button>
+      <button id="btn-step" style="background:#607D8B">Next Step</button>
+      <button id="btn-clear-path" style="background:#E53935">Clear Path</button>
+      <button id="btn-clear-walls" style="background:#E53935">Clear Walls</button>
+      <button id="btn-rand-walls" style="background:#795548">Random Walls</button>
+      <button id="btn-rand-maze" style="background:#795548">Random Maze</button>
+      <button id="btn-save" style="background:#607D8B">Save Map</button>
+      <button id="btn-load" style="background:#607D8B">Load Map</button>
+      <button id="btn-compare" class="btn-full" style="background:#3F51B5">Compare All</button>
+    </div>
+
+    <hr>
+    <h2>Statistics</h2>
+    <div class="stat-row"><span>Path Cost:</span> <span class="stat-val" id="st-cost">-</span></div>
+    <div class="stat-row"><span>Visited Nodes:</span> <span class="stat-val" id="st-visited">-</span></div>
+    <div class="stat-row"><span>Execute Time:</span> <span class="stat-val" id="st-time">-</span></div>
+    <div class="stat-row"><span>Operations:</span> <span class="stat-val" id="st-ops">-</span></div>
   </div>
-</div>
 
-<input type="file" id="file-input" accept=".json" style="display:none">
+  <div id="compare-modal">
+    <div id="compare-box">
+      <span id="close-modal">&times;</span>
+      <h3>Heuristic Comparison</h3>
+      <table id="compare-table"></table>
+    </div>
+  </div>
 
-<script src="script.js"></script>
+  <input type="file" id="file-input" accept=".json" style="display:none">
+
+  <script src="script.js"></script>
 </body>
+
 </html>
