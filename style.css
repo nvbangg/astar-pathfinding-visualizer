@@ -1,10 +1,14 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { 
-  display: flex; 
-  height: 100vh; 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-  background: #FAFAFA; 
-  overflow: hidden; 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  display: flex;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fafafa;
+  overflow: hidden;
   color: #333;
 }
 #canvas-container {
@@ -13,7 +17,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #E0E0E0;
+  background: #e0e0e0;
   padding: 10px;
   min-width: 0;
   gap: 20px;
@@ -32,106 +36,111 @@ body {
 #github-link a:hover {
   text-decoration: underline;
 }
-#canvas { 
+#canvas {
   background: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  display: block; 
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: block;
   cursor: crosshair;
   max-width: 100%;
   max-height: calc(100% - 30px);
   object-fit: contain;
 }
 #panel {
-  width: 320px; 
-  min-width: 320px; 
-  background: #F5F5F5;
-  padding: 15px; 
-  overflow-y: auto; 
-  display: flex; 
-  flex-direction: column; 
+  width: 320px;
+  min-width: 320px;
+  background: #f5f5f5;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   border-left: 1px solid #ddd;
 }
-h2 { 
-  font-size: 16px; 
-  font-weight: bold; 
-  margin: 4px 0 2px; 
+h2 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 4px 0 2px;
   color: #000;
 }
-hr { 
-  border: none; 
-  border-top: 1px solid #ccc; 
-  margin: 8px 0; 
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 8px 0;
 }
-label { 
-  font-size: 13px; 
-  display: flex; 
-  align-items: center; 
-  gap: 6px; 
-  cursor: pointer; 
+label {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
   padding: 2px 0;
 }
 label.indent {
   padding-left: 18px;
 }
-select, input[type=range] { 
-  width: 100%; 
-  font-size: 13px; 
-  margin: 2px 0 4px; 
+select,
+input[type="range"] {
+  width: 100%;
+  font-size: 13px;
+  margin: 2px 0 4px;
   padding: 4px;
   border: 1px solid #ccc;
   border-radius: 2px;
 }
-.btn-grid { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 4px; 
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
 }
 button {
-  color: white; 
-  border: none; 
-  padding: 8px 4px; 
+  color: white;
+  border: none;
+  padding: 8px 4px;
   font-size: 12px;
-  font-weight: bold; 
-  cursor: pointer; 
+  font-weight: bold;
+  cursor: pointer;
   border-radius: 3px;
 }
-button:hover { 
+button:hover {
   opacity: 0.85;
 }
-.btn-full { grid-column: span 2; }
-.stat-row { 
-  display: flex; 
-  justify-content: space-between; 
-  font-size: 13px; 
+.btn-full {
+  grid-column: span 2;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
   padding: 3px 0;
 }
-.stat-val { 
-  font-weight: bold; 
+.stat-val {
+  font-weight: bold;
 }
 
 /* Compare Modal Styling */
 #compare-modal {
-  display: none; 
-  position: fixed; 
+  display: none;
+  position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.4); 
+  background: rgba(0, 0, 0, 0.4);
   z-index: 100;
-  align-items: center; 
+  align-items: center;
   justify-content: center;
 }
-#compare-modal.show { display: flex; }
+#compare-modal.show {
+  display: flex;
+}
 #compare-box {
-  background: #F0F0F0; 
-  padding: 25px; 
+  background: #f0f0f0;
+  padding: 25px;
   border-radius: 4px;
-  max-width: 95vw; 
+  max-width: 95vw;
   overflow-x: auto;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   position: relative;
 }
-#compare-box h3 { 
-  margin-bottom: 15px; 
+#compare-box h3 {
+  margin-bottom: 15px;
   font-size: 20px;
   text-align: center;
 }
@@ -147,24 +156,28 @@ button:hover {
 #close-modal:hover {
   color: #000;
 }
-table { 
-  border-collapse: collapse; 
+table {
+  border-collapse: collapse;
   width: auto;
   margin: 0 auto;
 }
-th { 
-  background: #E0E0E0; 
-  padding: 10px 15px; 
-  border: 2px ridge #eee; 
+th {
+  background: #e0e0e0;
+  padding: 10px 15px;
+  border: 2px ridge #eee;
   text-align: center;
   font-size: 15px;
   font-weight: bold;
 }
-td { 
-  padding: 8px 15px; 
-  border: 2px ridge #eee; 
-  text-align: center; 
+td {
+  padding: 8px 15px;
+  border: 2px ridge #eee;
+  text-align: center;
   font-size: 15px;
 }
-tr.ok { background: #F9FBE7; }
-tr.err { background: #FFEBEE; }
+tr.ok {
+  background: #f9fbe7;
+}
+tr.err {
+  background: #ffebee;
+}
